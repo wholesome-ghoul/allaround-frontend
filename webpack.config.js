@@ -17,7 +17,7 @@ module.exports = () => {
       use: "ts-loader",
     },
     {
-      test: /\.s[ac]ss$/,
+      test: /\.s?css$/,
       use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
     },
   ];
