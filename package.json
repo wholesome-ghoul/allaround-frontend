@@ -15,6 +15,7 @@
     "@types/react-dom": "^18.2.4",
     "@types/styled-components": "^5.1.26",
     "@types/three": "^0.152.1",
+    "axios": "^1.4.0",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -70,5 +71,6 @@
     "webpack": "^5",
     "webpack-cli": "^4",
     "webpack-dev-server": "^4"
-  }
+  },
+  "proxy": "http://localhost:4000"
 }
