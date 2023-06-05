@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useReducer } from "react";
 import styled from "styled-components";
 import {
   Button,
@@ -7,7 +7,10 @@ import {
   Container,
   List,
 } from "@allaround/all-components";
+
 import { postRequest } from "../utils";
+import { initialState, reducer } from "./state";
+import { passwordValidator, usernameValidator } from "./validators";
 
 const _Label = styled(Label)`
   display: block;
@@ -18,101 +21,15 @@ const _Input = styled(Input)`
   display: block;
 `;
 
-const usernameValidator = (username: string) => {
-  const isMoreThan = username.length > 3;
-  const isLessThan = username.length < 21;
-  const isAlphanumeric = username.match(/^[a-zA-Z0-9_-]+$/);
-
-  const result = {
-    isMoreThan: {
-      valid: isMoreThan,
-      text: "Username must be more than 3 characters",
-    },
-    isLessThan: {
-      valid: isLessThan,
-      text: "Username must be less than 21 characters",
-    },
-    isAlphanumeric: {
-      valid: isAlphanumeric,
-      text: "Username must contain only these characters: a-z, A-Z, 0-9, _ and -",
-    },
-  };
-
-  return {
-    valid: Object.values(result).every((value) => value.valid),
-    texts: Object.values(result)
-      .filter((value) => !value.valid)
-      .map((value) => value.text),
-  };
-};
-
-const passwordValidator = (password: string) => {
-  const hasNonAlphabetic = /[^a-zA-Z]/.test(password);
-  const hasNumeric = /\d/.test(password);
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasMinimumLength = password.length >= 8;
-
-  const result = {
-    hasNonAlphabetic: {
-      valid: hasNonAlphabetic,
-      text: "Password must contain at least 1 non-alphabetic character",
-    },
-    hasNumeric: {
-      valid: hasNumeric,
-      text: "Password must contain at least 1 numeric character",
-    },
-    hasUppercase: {
-      valid: hasUppercase,
-      text: "Password must contain at least 1 uppercase character",
-    },
-    hasLowercase: {
-      valid: hasLowercase,
-      text: "Password must contain at least 1 lowercase character",
-    },
-    hasMinimumLength: {
-      valid: hasMinimumLength,
-      text: "Password must be at least 8 characters long",
-    },
-  };
-
-  return {
-    valid: Object.values(result).every((value) => value.valid),
-    texts: Object.values(result)
-      .filter((value) => !value.valid)
-      .map((value) => value.text),
-  };
-};
-
 const SignUp = () => {
-  const [email, setEmail] = useState("tmp@gmail.com");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("Password1!");
-  const [usernameError, setUsernameError] = useState<{
-    texts: string[];
-    show: boolean;
-  }>({
-    texts: [],
-    show: false,
-  });
-  const [passwordError, setPasswordError] = useState<{
-    texts: string[];
-    show: boolean;
-  }>({
-    texts: [],
-    show: false,
-  });
-  const [error, setError] = useState({
-    text: "",
-    show: false,
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
+    dispatch({ type: "set_email", email: event.target.value });
   };
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(event.target.value);
+    dispatch({ type: "set_password", password: event.target.value });
 
     let show = false;
     let texts: string[] = [];
@@ -122,14 +39,17 @@ const SignUp = () => {
       texts = validator.texts;
       show = true;
 
-      setError({ text: "", show: false });
+      dispatch({ type: "set_error", error: { texts: [], show: false } });
     }
 
-    setPasswordError({ texts, show });
+    dispatch({
+      type: "set_password_error",
+      passwordError: { texts, show },
+    });
   };
 
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(event.target.value);
+    dispatch({ type: "set_username", username: event.target.value });
 
     let show = false;
     let texts: string[] = [];
@@ -139,23 +59,62 @@ const SignUp = () => {
       texts = validator.texts;
       show = true;
 
-      setError({ text: "", show: false });
+      dispatch({ type: "set_error", error: { texts: [], show: false } });
     }
 
-    setUsernameError({ texts, show });
+    dispatch({
+      type: "set_username_error",
+      usernameError: { texts, show },
+    });
   };
 
   const signUp = async () => {
-    if (usernameError.show || passwordError.show) {
+    if (state.usernameError.show || state.passwordError.show) {
+      return;
+    }
+
+    if (state.email.length === 0) {
+      dispatch({
+        type: "set_error",
+        error: {
+          texts: ["Email cannot be empty"],
+          show: true,
+        },
+      });
+
+      return;
+    }
+
+    if (state.username.length === 0) {
+      dispatch({
+        type: "set_error",
+        error: {
+          texts: ["Username cannot be empty"],
+          show: true,
+        },
+      });
+
+      return;
+    }
+
+    if (state.password.length === 0) {
+      dispatch({
+        type: "set_error",
+        error: {
+          texts: ["Password cannot be empty"],
+          show: true,
+        },
+      });
+
       return;
     }
 
     const response = await postRequest(
       "http://localhost:4000/api/users/sign-up",
       {
-        email,
-        username,
-        password,
+        email: state.email,
+        username: state.username,
+        password: state.password,
       },
       201
     );
@@ -168,24 +127,24 @@ const SignUp = () => {
       show = true;
     }
 
-    setError({ text, show });
+    dispatch({ type: "set_error", error: { texts: [text], show } });
   };
 
   return (
     <Container
       grid={{ rows: "auto", cols: "3" }}
       gap={{ row: "1rem" }}
-      id="noice"
     >
       <Container noGrid gridPosition={{ rowPos: "1", colPos: "2/3" }}>
         <_Label htmlFor="email" size="medium">
           Email
         </_Label>
         <_Input
-          value={email}
+          value={state.email}
           onChange={handleEmailChange}
           type="email"
           id="email"
+          required
           fill
         />
       </Container>
@@ -194,10 +153,12 @@ const SignUp = () => {
           Username
         </_Label>
         <_Input
-          value={username}
+          value={state.username}
           onChange={handleUsernameChange}
           type="text"
           id="username"
+          isError={state.usernameError.show}
+          required
           fill
         />
       </Container>
@@ -206,17 +167,18 @@ const SignUp = () => {
           Password
         </_Label>
         <_Input
-          value={password}
+          value={state.password}
           onChange={handlePasswordChange}
           type="password"
           id="password"
+          required
           fill
         />
       </Container>
       <Container noGrid gridPosition={{ rowPos: "4", colPos: "2/3" }}>
-        <List items={usernameError.texts}></List>
-        <List items={passwordError.texts}></List>
-        <div>{error.text}</div>
+        <List items={state.usernameError.texts}></List>
+        <List items={state.passwordError.texts}></List>
+        <Container noGrid>{state.error.texts}</Container>
       </Container>
       <Button
         onClick={signUp}
