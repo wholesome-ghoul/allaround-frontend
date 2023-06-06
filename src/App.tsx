@@ -1,36 +1,24 @@
-import * as THREE from "three";
-import { useRef, useState } from "react";
-import { Canvas, useFrame, ThreeElements } from "@react-three/fiber";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-function _Box(props: ThreeElements["mesh"]) {
-  const ref = useRef<THREE.Mesh>(null!);
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
-  useFrame((state, delta) => (ref.current.rotation.x += delta))
-
-  return (
-    <mesh
-      {...props}
-      ref={ref}
-      scale={clicked ? 1.5 : 1}
-      onClick={() => click(!clicked)}
-      onPointerOver={() => hover(true)}
-      onPointerOut={() => hover(false)}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </mesh>
-  );
-}
+import Home from "./home";
+import SignUp from "./sign-up";
+import SignIn from "./sign-in";
+import { SignInContext } from "./context";
+import { useIsUserSignedIn } from "./hooks";
 
 const App = () => {
+  const { isSignedIn, setIsSignedIn } = useIsUserSignedIn();
+
   return (
-    <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <_Box position={[-1.2, 0, 0]} />
-      <_Box position={[1.2, 0, 0]} />
-    </Canvas>
+    <SignInContext.Provider value={{ isSignedIn, signIn: setIsSignedIn }}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/sign-up" element={<SignUp />} />
+          {!isSignedIn && <Route path="/sign-in" element={<SignIn />} />}
+        </Routes>
+      </BrowserRouter>
+    </SignInContext.Provider>
   );
 };
 

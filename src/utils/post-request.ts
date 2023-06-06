@@ -3,13 +3,15 @@ import { ServerResponse, PostBody } from "./types";
 const postRequest = async (
   url: string,
   body: PostBody,
-  expectedStatus = 200
+  expectedStatus = 200,
+  { credentials = "omit" }: { credentials?: RequestCredentials } = {}
 ) => {
   let data: ServerResponse = {};
 
   try {
     const response = await fetch(url, {
       method: "post",
+      credentials,
       headers: {
         "Content-Type": "application/json",
       },
