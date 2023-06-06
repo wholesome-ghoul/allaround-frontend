@@ -5,12 +5,30 @@ type Validator = {
   };
 };
 
-const validatorTemplate = (validator: Validator) => ({
+type ValidatorTemplate = {
+  valid: boolean;
+  texts: string[];
+};
+
+const validatorTemplate = (validator: Validator): ValidatorTemplate => ({
   valid: Object.values(validator).every((value) => value.valid),
   texts: Object.values(validator)
     .filter((value) => !value.valid)
     .map((value) => value.text),
 });
+
+const emailValidator = (email: string) => {
+  const isNonEmpty = email.length > 0;
+
+  const validator = {
+    isNonEmpty: {
+      valid: isNonEmpty,
+      text: "Email must not be empty",
+    },
+  };
+
+  return validatorTemplate(validator);
+};
 
 const usernameValidator = (username: string) => {
   const isMoreThan = username.length > 3;
@@ -68,4 +86,5 @@ const passwordValidator = (password: string) => {
   return validatorTemplate(validator);
 };
 
-export { usernameValidator, passwordValidator };
+export { emailValidator, usernameValidator, passwordValidator };
+export type { Validator, ValidatorTemplate };

@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useCallback } from "react";
 import styled from "styled-components";
 import {
   Button,
@@ -10,7 +10,12 @@ import {
 
 import { postRequest } from "../utils";
 import { initialState, reducer } from "./state";
-import { passwordValidator, usernameValidator } from "./validators";
+import {
+  passwordValidator,
+  usernameValidator,
+  emailValidator,
+  ValidatorTemplate,
+} from "./validators";
 
 const _Label = styled(Label)`
   display: block;
@@ -23,48 +28,59 @@ const _Input = styled(Input)`
 
 const SignUp = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const dispatchError = useCallback(
+    (validator: ValidatorTemplate) => {
+      let show = false;
+      let texts: string[] = [];
+
+      if (!validator.valid) {
+        texts = validator.texts;
+        show = true;
+
+        dispatch({ type: "set_error", error: { texts: [], show: false } });
+      }
+
+      return { texts, show };
+    },
+    [dispatch]
+  );
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: "set_email", email: event.target.value });
-  };
 
-  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch({ type: "set_password", password: event.target.value });
+    const validator = emailValidator(event.target.value);
+    const { texts, show } = dispatchError(validator);
 
-    let show = false;
-    let texts: string[] = [];
-
-    const validator = passwordValidator(event.target.value);
-    if (!validator.valid) {
-      texts = validator.texts;
-      show = true;
-
-      dispatch({ type: "set_error", error: { texts: [], show: false } });
-    }
-
+    const type = "set_email_error";
     dispatch({
-      type: "set_password_error",
-      passwordError: { texts, show },
+      type,
+      emailError: { texts, show },
     });
   };
 
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     dispatch({ type: "set_username", username: event.target.value });
 
-    let show = false;
-    let texts: string[] = [];
-
     const validator = usernameValidator(event.target.value);
-    if (!validator.valid) {
-      texts = validator.texts;
-      show = true;
+    const { texts, show } = dispatchError(validator);
 
-      dispatch({ type: "set_error", error: { texts: [], show: false } });
-    }
-
+    const type = "set_username_error";
     dispatch({
-      type: "set_username_error",
+      type,
       usernameError: { texts, show },
+    });
+  };
+
+  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    dispatch({ type: "set_password", password: event.target.value });
+
+    const validator = passwordValidator(event.target.value);
+    const { texts, show } = dispatchError(validator);
+
+    const type = "set_password_error";
+    dispatch({
+      type,
+      passwordError: { texts, show },
     });
   };
 
@@ -75,8 +91,8 @@ const SignUp = () => {
 
     if (state.email.length === 0) {
       dispatch({
-        type: "set_error",
-        error: {
+        type: "set_email_error",
+        emailError: {
           texts: ["Email cannot be empty"],
           show: true,
         },
@@ -87,8 +103,8 @@ const SignUp = () => {
 
     if (state.username.length === 0) {
       dispatch({
-        type: "set_error",
-        error: {
+        type: "set_username_error",
+        usernameError: {
           texts: ["Username cannot be empty"],
           show: true,
         },
@@ -99,8 +115,8 @@ const SignUp = () => {
 
     if (state.password.length === 0) {
       dispatch({
-        type: "set_error",
-        error: {
+        type: "set_password_error",
+        passwordError: {
           texts: ["Password cannot be empty"],
           show: true,
         },
@@ -131,10 +147,7 @@ const SignUp = () => {
   };
 
   return (
-    <Container
-      grid={{ rows: "auto", cols: "3" }}
-      gap={{ row: "1rem" }}
-    >
+    <Container grid={{ rows: "auto", cols: "3" }} gap={{ row: "1rem" }}>
       <Container noGrid gridPosition={{ rowPos: "1", colPos: "2/3" }}>
         <_Label htmlFor="email" size="medium">
           Email
@@ -144,7 +157,7 @@ const SignUp = () => {
           onChange={handleEmailChange}
           type="email"
           id="email"
-          required
+          isError={state.emailError.show}
           fill
         />
       </Container>
@@ -158,7 +171,6 @@ const SignUp = () => {
           type="text"
           id="username"
           isError={state.usernameError.show}
-          required
           fill
         />
       </Container>
@@ -171,11 +183,12 @@ const SignUp = () => {
           onChange={handlePasswordChange}
           type="password"
           id="password"
-          required
+          isError={state.passwordError.show}
           fill
         />
       </Container>
       <Container noGrid gridPosition={{ rowPos: "4", colPos: "2/3" }}>
+        <List items={state.emailError.texts}></List>
         <List items={state.usernameError.texts}></List>
         <List items={state.passwordError.texts}></List>
         <Container noGrid>{state.error.texts}</Container>

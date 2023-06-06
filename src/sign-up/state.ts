@@ -1,14 +1,15 @@
-type DisplayError = {
+export type DisplayError = {
   texts: string[];
   show: boolean;
 };
 
-type ACTIONTYPE =
+export type ACTIONTYPE =
   | { type: "set_email"; email: string }
   | { type: "set_username"; username: string }
   | { type: "set_password"; password: string }
   | { type: "set_username_error"; usernameError: DisplayError }
   | { type: "set_password_error"; passwordError: DisplayError }
+  | { type: "set_email_error"; emailError: DisplayError }
   | { type: "set_error"; error: DisplayError };
 
 const initialError: DisplayError = {
@@ -22,6 +23,7 @@ const initialState = {
   password: "",
   usernameError: initialError,
   passwordError: initialError,
+  emailError: initialError,
   error: initialError,
 };
 
@@ -37,6 +39,8 @@ const reducer = (state: typeof initialState, action: ACTIONTYPE) => {
       return { ...state, usernameError: action.usernameError };
     case "set_password_error":
       return { ...state, passwordError: action.passwordError };
+    case "set_email_error":
+      return { ...state, emailError: action.emailError };
     case "set_error":
       return { ...state, error: action.error };
     default:
