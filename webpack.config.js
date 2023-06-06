@@ -6,6 +6,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 // const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
+const Dotenv = require("dotenv-webpack");
 
 const isDev = process.env.STAGING_ENV === "dev";
 
@@ -35,6 +36,7 @@ module.exports = () => {
       // chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
     }),
     new ESLintPlugin(),
+    new Dotenv(),
   ].filter(Boolean);
 
   const devServer = {

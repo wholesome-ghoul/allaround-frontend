@@ -1,5 +1,6 @@
 import React, { useReducer, useCallback } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import {
   Button,
   Label,
@@ -8,6 +9,7 @@ import {
   List,
 } from "@allaround/all-components";
 
+import config from "../config";
 import { postRequest } from "../utils";
 import { initialState, reducer } from "./state";
 import {
@@ -28,6 +30,7 @@ const _Input = styled(Input)`
 
 const SignUp = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const navigate = useNavigate();
   const dispatchError = useCallback(
     (validator: ValidatorTemplate) => {
       let show = false;
@@ -125,8 +128,8 @@ const SignUp = () => {
       return;
     }
 
-    const response = await postRequest(
-      "http://localhost:4000/api/users/sign-up",
+    const trySignUp = await postRequest(
+      `${config.SERVER}/api/users/sign-up`,
       {
         email: state.email,
         username: state.username,
@@ -138,9 +141,25 @@ const SignUp = () => {
     let show = false;
     let text = "";
 
-    if (!response.success) {
-      text = response.data.error ?? "Oops, something went wrong!";
+    if (!trySignUp.success) {
+      text = trySignUp.data.error ?? "Oops, something went wrong!";
       show = true;
+    } else {
+      const id = trySignUp.data.id;
+      const confirmEmail = await postRequest(
+        `${config.SERVER}/api/users/confirm-email`,
+        {
+          id,
+        }
+      );
+
+      if (confirmEmail.success) {
+        navigate("/sign-in");
+      } else {
+        text = confirmEmail.data.error ?? "Oops, something went wrong!";
+        show = true;
+        dispatch({ type: "set_error", error: { texts: [text], show } });
+      }
     }
 
     dispatch({ type: "set_error", error: { texts: [text], show } });

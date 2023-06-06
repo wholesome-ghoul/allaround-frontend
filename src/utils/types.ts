@@ -1,6 +1,9 @@
-type ServerSuccess = {
+type UnkownData = {
+  [key: string]: unknown;
+};
+
+type ServerSuccess = UnkownData & {
   message?: string;
-  data?: any;
 };
 
 type ServerError = {
@@ -15,6 +18,6 @@ type SignUpUser = {
   password: string;
 };
 
-type PostBody = SignUpUser;
+type PostBody = UnkownData | SignUpUser;
 
 export type { ServerResponse, ServerError, ServerSuccess, PostBody };
