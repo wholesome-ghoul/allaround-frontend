@@ -167,7 +167,11 @@ const SignUp = () => {
 
   return (
     <Container grid={{ rows: "auto", cols: "3" }} gap={{ row: "1rem" }}>
-      <Container noGrid gridPosition={{ rowPos: "1", colPos: "2/3" }}>
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "1", colPos: "2/3" }}
+        id="email-container"
+      >
         <_Label htmlFor="email" size="medium">
           Email
         </_Label>
@@ -176,11 +180,16 @@ const SignUp = () => {
           onChange={handleEmailChange}
           type="email"
           id="email"
+          dataCy="email-input"
           isError={state.emailError.show}
           fill
         />
       </Container>
-      <Container noGrid gridPosition={{ rowPos: "2", colPos: "2/3" }}>
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "2", colPos: "2/3" }}
+        id="username-container"
+      >
         <_Label htmlFor="username" size="medium">
           Username
         </_Label>
@@ -189,11 +198,16 @@ const SignUp = () => {
           onChange={handleUsernameChange}
           type="text"
           id="username"
+          dataCy="username-input"
           isError={state.usernameError.show}
           fill
         />
       </Container>
-      <Container noGrid gridPosition={{ rowPos: "3", colPos: "2/3" }}>
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "3", colPos: "2/3" }}
+        id="password-container"
+      >
         <_Label htmlFor="password" size="medium">
           Password
         </_Label>
@@ -202,19 +216,27 @@ const SignUp = () => {
           onChange={handlePasswordChange}
           type="password"
           id="password"
+          dataCy="password-input"
           isError={state.passwordError.show}
           fill
         />
       </Container>
-      <Container noGrid gridPosition={{ rowPos: "4", colPos: "2/3" }}>
-        <List items={state.emailError.texts}></List>
-        <List items={state.usernameError.texts}></List>
-        <List items={state.passwordError.texts}></List>
-        <Container noGrid>{state.error.texts}</Container>
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "4", colPos: "2/3" }}
+        id="errors-container"
+      >
+        <List items={state.emailError.texts} dataCy="email-errors"></List>
+        <List items={state.usernameError.texts} dataCy="username-errors"></List>
+        <List items={state.passwordError.texts} dataCy="password-errors"></List>
+        <Container noGrid dataCy="general-errors">
+          {state.error.texts}
+        </Container>
       </Container>
       <Button
         onClick={signUp}
         gridPosition={{ rowPos: "5", colPos: "2/3" }}
+        dataCy="sign-up-button"
         fill
       >
         Sign up
