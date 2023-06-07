@@ -2,16 +2,22 @@ import React from "react";
 
 import { postRequest } from "../utils";
 import config from "../config";
+import useLocalStorage from "./use-local-storage";
 
-const useIsUserSignedIn = () => {
-  const [isSignedIn, setIsSignedIn] = React.useState(false);
+const useIsUserSignedIn = (defaultValue: boolean = false) => {
+  const [isSignedIn, setIsSignedIn] = useLocalStorage(
+    "allaround-user",
+    defaultValue
+  );
 
   React.useEffect(() => {
+    if (!isSignedIn) return;
+
     const isUserSignedIn = async () => {
       const trySignIn = await postRequest(
-        `${config.SERVER}/api/users/sign-in`,
+        `${config.SERVER}/api/users/is-signed-in`,
         {},
-        406,
+        200,
         { credentials: "include" }
       );
 
@@ -19,7 +25,7 @@ const useIsUserSignedIn = () => {
     };
 
     isUserSignedIn();
-  }, []);
+  }, [isSignedIn, setIsSignedIn]);
 
   return { isSignedIn, setIsSignedIn };
 };

@@ -25,7 +25,7 @@ const postRequest = async (
   } catch (e) {
     data.error = "something went wrong";
 
-    return { data, status: 500, success: false };
+    return { data, success: false };
   }
 };
 

@@ -1,24 +1,71 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import Home from "./home";
 import SignUp from "./sign-up";
 import SignIn from "./sign-in";
-import { SignInContext } from "./context";
-import { useIsUserSignedIn } from "./hooks";
+import { useIsUserSignedIn, useLocalStorage } from "./hooks";
+import React from "react";
+
+type GuardedRouteProps = {
+  children: React.ReactNode;
+  pass?: boolean;
+};
+
+const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
+  const { isSignedIn } = useIsUserSignedIn();
+
+  if (isSignedIn && pass) {
+    return <Navigate to="/" />;
+  }
+
+  if (isSignedIn) {
+    return children
+  }
+
+  if (pass) {
+    return children;
+  }
+
+  return <Navigate to="/sign-in" />;
+};
+
+const Tmp = () => {
+  return <div>GUARDED</div>;
+};
 
 const App = () => {
-  const { isSignedIn, setIsSignedIn } = useIsUserSignedIn();
+  useLocalStorage("allaround-user");
 
   return (
-    <SignInContext.Provider value={{ isSignedIn, signIn: setIsSignedIn }}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/sign-up" element={<SignUp />} />
-          {!isSignedIn && <Route path="/sign-in" element={<SignIn />} />}
-        </Routes>
-      </BrowserRouter>
-    </SignInContext.Provider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/guarded"
+          element={
+            <GuardedRoute>
+              <Tmp />
+            </GuardedRoute>
+          }
+        />
+        <Route
+          path="/sign-up"
+          element={
+            <GuardedRoute pass={true}>
+              <SignUp />
+            </GuardedRoute>
+          }
+        />
+        <Route
+          path="/sign-in"
+          element={
+            <GuardedRoute pass={true}>
+              <SignIn />
+            </GuardedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 };
 

@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import { Button, Container, Input, Label } from "@allaround/all-components";
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { postRequest } from "../utils";
 import config from "../config";
-import { SignInContext } from "../context";
+import { useLocalStorage } from "../hooks";
 
 const _Label = styled(Label)`
   display: block;
@@ -16,7 +16,7 @@ const SignIn = () => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({ text: "", show: false });
-  const { isSignedIn, signIn } = useContext(SignInContext);
+  const [_, setIsSignedIn] = useLocalStorage("allaround-user");
   const navigate = useNavigate();
 
   const handleEmailUsernameChange = (
@@ -58,69 +58,67 @@ const SignIn = () => {
       return;
     }
 
-    signIn(true);
+    setIsSignedIn(true);
     navigate("/");
   };
 
   return (
-    !isSignedIn && (
-      <Container grid={{ rows: "auto", cols: "3" }} gap={{ row: "1rem" }}>
-        <Container
-          noGrid
-          gridPosition={{ rowPos: "1", colPos: "2/3" }}
-          id="email-or-username-container"
-        >
-          <_Label htmlFor="email-or-username" size="medium">
-            Email / Username
-          </_Label>
-          <Input
-            value={emailOrUsername}
-            onChange={handleEmailUsernameChange}
-            type="text"
-            id="email-or-username"
-            dataCy="email-or-username-input"
-            fill
-          />
-        </Container>
-
-        <Container
-          noGrid
-          gridPosition={{ rowPos: "2", colPos: "2/3" }}
-          id="password-container"
-        >
-          <_Label htmlFor="password" size="medium">
-            Password
-          </_Label>
-          <Input
-            value={password}
-            onChange={handlePasswordChange}
-            type="password"
-            id="password"
-            dataCy="password-input"
-            fill
-          />
-        </Container>
-
-        <Container
-          noGrid
-          gridPosition={{ rowPos: "3", colPos: "2/3" }}
-          id="errors-container"
-        >
-          <Container noGrid dataCy="general-errors">
-            {error.text}
-          </Container>
-        </Container>
-
-        <Button
-          onClick={handleSignIn}
-          gridPosition={{ rowPos: "4", colPos: "2/3" }}
-          dataCy="sign-in-button"
+    <Container grid={{ rows: "auto", cols: "3" }} gap={{ row: "1rem" }}>
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "1", colPos: "2/3" }}
+        id="email-or-username-container"
+      >
+        <_Label htmlFor="email-or-username" size="medium">
+          Email / Username
+        </_Label>
+        <Input
+          value={emailOrUsername}
+          onChange={handleEmailUsernameChange}
+          type="text"
+          id="email-or-username"
+          dataCy="email-or-username-input"
           fill
-        >
-          Sign in
-        </Button>
+        />
       </Container>
-    )
+
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "2", colPos: "2/3" }}
+        id="password-container"
+      >
+        <_Label htmlFor="password" size="medium">
+          Password
+        </_Label>
+        <Input
+          value={password}
+          onChange={handlePasswordChange}
+          type="password"
+          id="password"
+          dataCy="password-input"
+          fill
+        />
+      </Container>
+
+      <Container
+        noGrid
+        gridPosition={{ rowPos: "3", colPos: "2/3" }}
+        id="errors-container"
+      >
+        <Container noGrid dataCy="general-errors">
+          {error.text}
+        </Container>
+      </Container>
+
+      <Button
+        onClick={handleSignIn}
+        gridPosition={{ rowPos: "4", colPos: "2/3" }}
+        dataCy="sign-in-button"
+        fill
+      >
+        Sign in
+      </Button>
+    </Container>
   );
 };
 
