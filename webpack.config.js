@@ -4,10 +4,9 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-// const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
 const dotenv = require("dotenv");
-const WorkboxPlugin = require("workbox-webpack-plugin");
 
 const env = dotenv.config({ path: `.env.${process.env.STAGING_ENV}` }).parsed;
 const envKeys = Object.keys(env).reduce((prev, next) => {
@@ -35,22 +34,23 @@ module.exports = () => {
   const plugins = [
     new webpack.DefinePlugin(envKeys),
     isDev && new ReactRefreshWebpackPlugin(),
-    // new ForkTsCheckerWebpackPlugin(),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       filename: "./index.html",
       template: "./public/index.html",
       publicPath,
     }),
-    new WorkboxPlugin.GenerateSW({
-      // these options encourage the ServiceWorkers to get in there fast
-      // and not allow any straggling "old" SWs to hang around
-      clientsClaim: true,
-      skipWaiting: true,
-    }),
     new MiniCssExtractPlugin({
-      // filename: "static/css/[name].[contenthash:8].css",
-      // chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
+      filename: "static/css/[name].[contenthash:8].css",
+      chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: "public/icons", to: "icons" },
+        { from: "public/manifest.webmanifest" },
+        { from: "public/service-worker.js" },
+        { from: "public/index.js" },
+      ],
     }),
     new ESLintPlugin(),
   ].filter(Boolean);
