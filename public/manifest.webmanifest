@@ -1,0 +1,17 @@
+{
+  "short_name": "AA",
+  "name": "AllAaround",
+  "description": "AllAaround: Social Media Manager",
+  "icons": [
+    {
+      "src": "/icons/allaround-icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/?source=pwa",
+  "background_color": "#3367D6",
+  "theme_color": "#3367D6",
+  "display": "standalone",
+  "scope": "/?source=pwa"
+}

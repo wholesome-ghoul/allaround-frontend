@@ -1,8 +1,9 @@
 {
-  "extends": "./node_modules/@allaround/configs-tsconfig/dist/tsconfig.build.json",
+  "extends": "@allaround/configs-tsconfig/dist/tsconfig.build.json",
   "compilerOptions": {
     "outDir": "dist",
     "types": ["cypress", "jest", "node"]
   },
-  "include": ["src", "**/*.ts"]
+  "include": ["src", "**/*.ts", "public/service-worker.js"],
+  "exclude": ["node_modules", "dist", "cypress", "cypress.config.ts"]
 }

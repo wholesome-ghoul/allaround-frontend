@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
-// const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
 const dotenv = require("dotenv");
 
@@ -17,6 +17,8 @@ const envKeys = Object.keys(env).reduce((prev, next) => {
 const isDev = process.env.STAGING_ENV === "dev";
 
 module.exports = () => {
+  const publicPath = isDev ? "http://localhost:3000" : "http://localhost:3000";
+
   const rules = [
     {
       test: /\.tsx?$/,
@@ -32,15 +34,23 @@ module.exports = () => {
   const plugins = [
     new webpack.DefinePlugin(envKeys),
     isDev && new ReactRefreshWebpackPlugin(),
-    // new ForkTsCheckerWebpackPlugin(),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       filename: "./index.html",
       template: "./public/index.html",
+      publicPath,
     }),
     new MiniCssExtractPlugin({
-      // filename: "static/css/[name].[contenthash:8].css",
-      // chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
+      filename: "static/css/[name].[contenthash:8].css",
+      chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: "public/icons", to: "icons" },
+        { from: "public/manifest.webmanifest" },
+        { from: "public/service-worker.js" },
+        { from: "public/index.js" },
+      ],
     }),
     new ESLintPlugin(),
   ].filter(Boolean);
