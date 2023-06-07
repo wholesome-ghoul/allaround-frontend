@@ -18,12 +18,8 @@ const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
     return <Navigate to="/" />;
   }
 
-  if (isSignedIn) {
+  if (isSignedIn || pass) {
     return children
-  }
-
-  if (pass) {
-    return children;
   }
 
   return <Navigate to="/sign-in" />;
