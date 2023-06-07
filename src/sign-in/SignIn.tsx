@@ -8,7 +8,7 @@ import { useLocalStorage } from "../hooks";
 
 const _Label = styled(Label)`
   display: block;
-  margin-bottom: 8px;
+  margin: 10px 0;
 `;
 
 const SignIn = () => {
@@ -77,6 +77,7 @@ const SignIn = () => {
           type="text"
           id="email-or-username"
           dataCy="email-or-username-input"
+          placeholder="Email or username"
           fill
         />
       </Container>
@@ -95,6 +96,7 @@ const SignIn = () => {
           type="password"
           id="password"
           dataCy="password-input"
+          placeholder="Min 8 characters long"
           fill
         />
       </Container>

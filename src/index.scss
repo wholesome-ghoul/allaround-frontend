@@ -1,14 +1,15 @@
 @import "reset.scss";
 
+
 :root {
   --bg-color: hsl(250, 13%, 9%);
   --fg-color: hsl(25, 91%, 43%);
   --fg-hover-color: hsl(25, 91%, 53%);
   --secondary-color: hsl(25, 64%, 56%);
 
-  --small-font-size: 0.8rem;
-  --medium-font-size: 1rem;
-  --large-font-size: 1.2rem;
+  --small-font-size: 0.9rem;
+  --medium-font-size: 1.2rem;
+  --large-font-size: 1.25rem;
   --error-color: hsl(0, 100%, 50%);
 }
 

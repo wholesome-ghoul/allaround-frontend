@@ -20,7 +20,7 @@ import {
 
 const _Label = styled(Label)`
   display: block;
-  margin-bottom: 8px;
+  margin: 10px 0;
 `;
 
 const _Input = styled(Input)`
@@ -179,6 +179,7 @@ const SignUp = () => {
           onChange={handleEmailChange}
           type="email"
           id="email"
+          placeholder="hello@address.com"
           dataCy="email-input"
           isError={state.emailError.show}
           fill
@@ -198,6 +199,7 @@ const SignUp = () => {
           type="text"
           id="username"
           dataCy="username-input"
+          placeholder="Min 4 characters long a-z, A-Z, 0-9, _-"
           isError={state.usernameError.show}
           fill
         />
@@ -215,6 +217,7 @@ const SignUp = () => {
           onChange={handlePasswordChange}
           type="password"
           id="password"
+          placeholder="Min 8 characters long"
           dataCy="password-input"
           isError={state.passwordError.show}
           fill
