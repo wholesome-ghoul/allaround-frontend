@@ -25,10 +25,6 @@ const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
   return <Navigate to="/sign-in" />;
 };
 
-const Tmp = () => {
-  return <div>GUARDED</div>;
-};
-
 const App = () => {
   useLocalStorage("allaround-user");
 
@@ -36,14 +32,6 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route
-          path="/guarded"
-          element={
-            <GuardedRoute>
-              <Tmp />
-            </GuardedRoute>
-          }
-        />
         <Route
           path="/sign-up"
           element={
