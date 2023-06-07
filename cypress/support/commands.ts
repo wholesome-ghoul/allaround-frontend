@@ -35,3 +35,31 @@
 //     }
 //   }
 // }
+Cypress.Commands.add("signin", () => {
+  const emailOrUsername = Cypress.env("CYPRESS_TEST_USER");
+  const password = Cypress.env("CYPRESS_TEST_PASSWORD");
+  const id = emailOrUsername;
+
+  cy.session(
+    id,
+    () => {
+      cy.visit("/sign-in");
+      cy.get("[data-cy=email-or-username-input]").type(emailOrUsername);
+      cy.get("[data-cy=password-input]").type(password);
+      cy.get("[data-cy=sign-in-button]").click();
+    },
+    {
+      validate: () => {
+        cy.url().should("eq", "http://localhost:3000/");
+        cy.getCookie("access_token").should("exist");
+      },
+    }
+  );
+});
+
+declare namespace Cypress {
+  interface Chainable {
+    signin(): Chainable<void>;
+  }
+}
+

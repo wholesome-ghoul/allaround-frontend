@@ -9,7 +9,6 @@ import {
   List,
 } from "@allaround/all-components";
 
-import config from "../config";
 import { postRequest } from "../utils";
 import { initialState, reducer } from "./state";
 import {
@@ -129,7 +128,7 @@ const SignUp = () => {
     }
 
     const trySignUp = await postRequest(
-      `${config.SERVER}/api/users/sign-up`,
+      `${process.env.SERVER}/api/users/sign-up`,
       {
         email: state.email,
         username: state.username,
@@ -147,7 +146,7 @@ const SignUp = () => {
     } else {
       const id = trySignUp.data.id;
       const confirmEmail = await postRequest(
-        `${config.SERVER}/api/users/confirm-email`,
+        `${process.env.SERVER}/api/users/confirm-email`,
         {
           id,
         }

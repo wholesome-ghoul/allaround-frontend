@@ -1,36 +1,55 @@
-import * as THREE from "three";
-import { useRef, useState } from "react";
-import { Canvas, useFrame, ThreeElements } from "@react-three/fiber";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-function _Box(props: ThreeElements["mesh"]) {
-  const ref = useRef<THREE.Mesh>(null!);
-  const [hovered, hover] = useState(false);
-  const [clicked, click] = useState(false);
-  useFrame((state, delta) => (ref.current.rotation.x += delta))
+import Home from "./home";
+import SignUp from "./sign-up";
+import SignIn from "./sign-in";
+import { useIsUserSignedIn, useLocalStorage } from "./hooks";
+import React from "react";
 
-  return (
-    <mesh
-      {...props}
-      ref={ref}
-      scale={clicked ? 1.5 : 1}
-      onClick={() => click(!clicked)}
-      onPointerOver={() => hover(true)}
-      onPointerOut={() => hover(false)}
-    >
-      <boxGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
-    </mesh>
-  );
-}
+type GuardedRouteProps = {
+  children: React.ReactNode;
+  pass?: boolean;
+};
+
+const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
+  const { isSignedIn } = useIsUserSignedIn();
+
+  if (isSignedIn && pass) {
+    return <Navigate to="/" />;
+  }
+
+  if (isSignedIn || pass) {
+    return children
+  }
+
+  return <Navigate to="/sign-in" />;
+};
 
 const App = () => {
+  useLocalStorage("allaround-user");
+
   return (
-    <Canvas>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-      <_Box position={[-1.2, 0, 0]} />
-      <_Box position={[1.2, 0, 0]} />
-    </Canvas>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route
+          path="/sign-up"
+          element={
+            <GuardedRoute pass={true}>
+              <SignUp />
+            </GuardedRoute>
+          }
+        />
+        <Route
+          path="/sign-in"
+          element={
+            <GuardedRoute pass={true}>
+              <SignIn />
+            </GuardedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
