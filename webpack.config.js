@@ -7,6 +7,7 @@ const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin"
 // const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
 const dotenv = require("dotenv");
+const WorkboxPlugin = require("workbox-webpack-plugin");
 
 const env = dotenv.config({ path: `.env.${process.env.STAGING_ENV}` }).parsed;
 const envKeys = Object.keys(env).reduce((prev, next) => {
@@ -17,6 +18,8 @@ const envKeys = Object.keys(env).reduce((prev, next) => {
 const isDev = process.env.STAGING_ENV === "dev";
 
 module.exports = () => {
+  const publicPath = isDev ? "http://localhost:3000" : "http://localhost:3000";
+
   const rules = [
     {
       test: /\.tsx?$/,
@@ -37,6 +40,13 @@ module.exports = () => {
     new HtmlWebpackPlugin({
       filename: "./index.html",
       template: "./public/index.html",
+      publicPath,
+    }),
+    new WorkboxPlugin.GenerateSW({
+      // these options encourage the ServiceWorkers to get in there fast
+      // and not allow any straggling "old" SWs to hang around
+      clientsClaim: true,
+      skipWaiting: true,
     }),
     new MiniCssExtractPlugin({
       // filename: "static/css/[name].[contenthash:8].css",
