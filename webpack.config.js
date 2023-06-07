@@ -1,4 +1,4 @@
-const path = require("path");
+const webpack = require("webpack");
 const aaConfigsWebpack = require("@allaround/configs-webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -6,7 +6,13 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 // const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
-const Dotenv = require("dotenv-webpack");
+const dotenv = require("dotenv");
+
+const env = dotenv.config({ path: `.env.${process.env.STAGING_ENV}` }).parsed;
+const envKeys = Object.keys(env).reduce((prev, next) => {
+  prev[`process.env.${next}`] = JSON.stringify(env[next]);
+  return prev;
+}, {});
 
 const isDev = process.env.STAGING_ENV === "dev";
 
@@ -24,6 +30,7 @@ module.exports = () => {
   ];
 
   const plugins = [
+    new webpack.DefinePlugin(envKeys),
     isDev && new ReactRefreshWebpackPlugin(),
     // new ForkTsCheckerWebpackPlugin(),
     new CleanWebpackPlugin(),
@@ -36,7 +43,6 @@ module.exports = () => {
       // chunkFilename: "static/css/[name].[contenthash:8].chunk.css",
     }),
     new ESLintPlugin(),
-    new Dotenv(),
   ].filter(Boolean);
 
   const devServer = {

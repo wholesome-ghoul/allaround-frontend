@@ -17,7 +17,7 @@
     "@types/react-dom": "^18.2.4",
     "@types/styled-components": "^5.1.26",
     "@types/three": "^0.152.1",
-    "dotenv-webpack": "^8.0.1",
+    "dotenv": "^16.1.4",
     "eslint-plugin-jsx-a11y": "^6.7.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

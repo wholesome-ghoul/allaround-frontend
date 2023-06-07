@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { postRequest } from "../utils";
-import config from "../config";
 import { useLocalStorage } from "../hooks";
 
 const _Label = styled(Label)`
@@ -42,7 +41,7 @@ const SignIn = () => {
     }
 
     const trySignIn = await postRequest(
-      `${config.SERVER}/api/users/sign-in`,
+      `${process.env.SERVER}/api/users/sign-in`,
       {
         email,
         username,

@@ -1,7 +1,6 @@
 import React from "react";
 
 import { postRequest } from "../utils";
-import config from "../config";
 import useLocalStorage from "./use-local-storage";
 
 const useIsUserSignedIn = (defaultValue: boolean = false) => {
@@ -15,7 +14,7 @@ const useIsUserSignedIn = (defaultValue: boolean = false) => {
 
     const isUserSignedIn = async () => {
       const trySignIn = await postRequest(
-        `${config.SERVER}/api/users/is-signed-in`,
+        `${process.env.SERVER}/api/users/is-signed-in`,
         {},
         200,
         { credentials: "include" }
