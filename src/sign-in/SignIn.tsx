@@ -1,5 +1,11 @@
 import styled from "styled-components";
-import { Button, Container, Input, Label } from "@allaround/all-components";
+import {
+  Button,
+  Container,
+  Heading,
+  Input,
+  Label,
+} from "@allaround/all-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -75,14 +81,11 @@ const SignIn = () => {
           { bp: theme.bp.px.md1, colPos: "8/13" },
         ]}
         minWidth="300px"
+        autoHor
         fill
       >
-        <Container
-          noGrid
-          gridPosition={{ rowPos: 1 }}
-          id="email-or-username-container"
-          fill
-        >
+        <Heading.h1>Sign in</Heading.h1>
+        <Container noGrid id="email-or-username-container" fill>
           <_Label htmlFor="email-or-username">Email / Username</_Label>
           <Input
             value={emailOrUsername}
@@ -95,7 +98,7 @@ const SignIn = () => {
           />
         </Container>
 
-        <Container noGrid gridPosition={{ rowPos: 2 }} id="password-container">
+        <Container noGrid id="password-container">
           <_Label htmlFor="password">Password</_Label>
           <Input
             value={password}
@@ -108,13 +111,13 @@ const SignIn = () => {
           />
         </Container>
 
-        <Container noGrid gridPosition={{ rowPos: 3 }} id="errors-container">
+        <Container noGrid id="errors-container">
           <Container noGrid dataCy="general-errors">
             {error.text}
           </Container>
         </Container>
 
-        <Container noGrid gridPosition={{ rowPos: 4 }} id="password-container">
+        <Container noGrid id="password-container">
           <Button onClick={handleSignIn} dataCy="sign-in-button" fill>
             Sign in
           </Button>
