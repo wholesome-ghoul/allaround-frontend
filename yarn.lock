@@ -2,20 +2,28 @@
 # yarn lockfile v1
 
 
-"@allaround/all-components@^1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@allaround/all-components/-/all-components-1.3.1.tgz#7b818458d8068fc0676012754fea5249ddbbaf81"
-  integrity sha512-m0tzS0GMeLH2pXYyqURcUY7YKr3kaAdhmB3GK8j/UMEyLw3s1q28tsDtHgbzyrxIgBPuxTPQWaK2QAgEnHBbhw==
+"@allaround/all-components@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@allaround/all-components/-/all-components-1.6.0.tgz#a0aefb3903c51f91beeb15d25df24e13b0613073"
+  integrity sha512-xnE2Tgsw4PRxalhb9O8A+NXXIccfb0nqnpnBU+qHBG2SLivw+eZCGQRxlJOJfw9wBxnLR39sTrvuZkPNx3WDkw==
   dependencies:
-    "@allaround/button" "^1.3.0"
-    "@allaround/container" "^1.1.0"
-    "@allaround/input" "^2.2.0"
-    "@allaround/label" "^1.1.0"
+    "@allaround/button" "^1.6.0"
+    "@allaround/common-scss" "^1.1.0"
+    "@allaround/container" "^1.4.0"
+    "@allaround/heading" "^1.0.0"
+    "@allaround/input" "^2.6.0"
+    "@allaround/label" "^1.4.0"
+    "@allaround/list" "^1.1.0"
 
-"@allaround/button@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@allaround/button/-/button-1.3.0.tgz#927ae0153d1db8dfcd6527bac43bfc265c2f3ae5"
-  integrity sha512-aWwRUhATuCq2se2tf6wt5OYc3NLaV2+oRDS2JKzNUPu1cHznCrtakiBx2LTuiJbaIpEU47yI/RIiDej0QqqQ9g==
+"@allaround/button@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@allaround/button/-/button-1.6.0.tgz#d8792738e7adf0c1f492e6fe22e36a0df2952744"
+  integrity sha512-9pIs5jusnaBG2ZXiQHgry33wNpDITfmgzw5+baY8Zxd15iSTJFgI1kpthc8CS6rubKHTN19EKsdfalPO7cYSng==
+
+"@allaround/common-scss@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@allaround/common-scss/-/common-scss-1.1.0.tgz#758fb70cc2dff509e7e76d28623989d4ecce0c2c"
+  integrity sha512-PuaQpJDotGKznBFj5EliUpo2RzFsbcENWIorYdZCYVVpfLqcsSLwkLz+R7eTUevZeEbop4F5Noz/SDcsKTVVYw==
 
 "@allaround/configs-tsconfig@^1.3.0":
   version "1.3.0"
@@ -27,20 +35,30 @@
   resolved "https://registry.yarnpkg.com/@allaround/configs-webpack/-/configs-webpack-1.16.0.tgz#ea010db65d019e38e34f32b053df50402cbc6abe"
   integrity sha512-hTWVzb2fZlqXpBM76V7X/rYkRaT0tib0vVIRqcZqeT5gt8pGHQpS8cAR6oOvsEQu0dWzi4INCfwkXjfkYBjZ+g==
 
-"@allaround/container@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@allaround/container/-/container-1.1.0.tgz#a5646fe6c396517875ec21731a2fb50843d26cf4"
-  integrity sha512-TC7XaQSBqrrVytiJfu8YvhTRbwkU1igh0St1y0mIz+mluq5QPuvp40E4/EFmE3ECkqys1y05JAb3VvInxSE/Mg==
+"@allaround/container@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@allaround/container/-/container-1.4.0.tgz#3167b947605226a064c65f70d56034c0eed1b894"
+  integrity sha512-Ymx9TpV6xh+8MnViEv6TQB52G5tqXAVIJ7PNtpCmCFyYrvmVRfz+Y1h5GWTQDt4+QvDeZbMgie6B7lRbhLzrqA==
 
-"@allaround/input@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@allaround/input/-/input-2.2.0.tgz#38239f053ce41982ba54ac27cf2be8b21164077b"
-  integrity sha512-7fFCcIuBOSaJbH0bJLJlZUTigKjzMZNVc+JMx2hZZoBzulZmPkp96hOWrGWajy7txFKvvHiQBaVqyU1yKKJ/Cw==
+"@allaround/heading@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@allaround/heading/-/heading-1.0.0.tgz#efa60bc09cd86fde0e93cc06aa36203bf2bba7b3"
+  integrity sha512-j5MDyRsoPDc1nvQx1TVlV+nTFKR1ksHkxix5om8wFOj5Y8El3/xFeQ/+cn93n0Zb6N5a8KIzthcMb4hbhx+7ug==
 
-"@allaround/label@^1.1.0":
+"@allaround/input@^2.6.0":
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/@allaround/input/-/input-2.6.0.tgz#e205573c6bca58f2b1a189cfde8900c7374e3388"
+  integrity sha512-28x+BfVypc3ZYlxD4Ou+829G6jQ0TkUNPgXEwIfANyNq5jr4K5U5qX/U5NGKHQ7uYhJUyv58Ntd+XOaFqRagPg==
+
+"@allaround/label@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@allaround/label/-/label-1.4.0.tgz#15f3a0a11937ce683f5244febcf8c2320bc54f0b"
+  integrity sha512-kpfafXET4xx9VXRrGg2hgtQ7dysXtkKx9XcuUhaCJZNE0MxcS09j3gEU++yhGp3DYQSUxJn0FbAuFlKZpLLL1w==
+
+"@allaround/list@^1.1.0":
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@allaround/label/-/label-1.1.0.tgz#67cecf971a7b8e4e967f8a5df18799372417f90e"
-  integrity sha512-VDrstPN/VMQIezXYdKLJ5kTi50qDMIjmvAyKj/yv60dHsILEd2YTirf6LxB+RNkdXxc3cNBnswXiw+QcpJARGw==
+  resolved "https://registry.yarnpkg.com/@allaround/list/-/list-1.1.0.tgz#52f571208c6c09ed0155ccbc68a9ecccccaf5ba5"
+  integrity sha512-5g6lfmEOIw1Zb7MO/HjBWWoEyL7p1PePUkf4OO9Tw6qH74bnEGXJLsOGtQii4jp8L1+JdO45hRrijPSxgzqEnw==
 
 "@ampproject/remapping@^2.2.0":
   version "2.2.1"
