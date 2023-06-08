@@ -3,12 +3,16 @@ import { Button, Container, Input, Label } from "@allaround/all-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { postRequest } from "../utils";
+import { postRequest, theme } from "../utils";
 import { useLocalStorage } from "../hooks";
 
 const _Label = styled(Label)`
   display: block;
   margin: 10px 0;
+`;
+
+const SignInContainer = styled(Container)`
+  padding: 2.5rem;
 `;
 
 const SignIn = () => {
@@ -62,63 +66,60 @@ const SignIn = () => {
   };
 
   return (
-    <Container grid={{ rows: "auto", cols: "3" }} gap={{ row: "1rem" }}>
-      <Container
-        noGrid
-        gridPosition={{ rowPos: "1", colPos: "2/3" }}
-        id="email-or-username-container"
-      >
-        <_Label htmlFor="email-or-username" size="medium">
-          Email / Username
-        </_Label>
-        <Input
-          value={emailOrUsername}
-          onChange={handleEmailUsernameChange}
-          type="text"
-          id="email-or-username"
-          dataCy="email-or-username-input"
-          placeholder="Email or username"
-          fill
-        />
-      </Container>
-
-      <Container
-        noGrid
-        gridPosition={{ rowPos: "2", colPos: "2/3" }}
-        id="password-container"
-      >
-        <_Label htmlFor="password" size="medium">
-          Password
-        </_Label>
-        <Input
-          value={password}
-          onChange={handlePasswordChange}
-          type="password"
-          id="password"
-          dataCy="password-input"
-          placeholder="Min 8 characters long"
-          fill
-        />
-      </Container>
-
-      <Container
-        noGrid
-        gridPosition={{ rowPos: "3", colPos: "2/3" }}
-        id="errors-container"
-      >
-        <Container noGrid dataCy="general-errors">
-          {error.text}
-        </Container>
-      </Container>
-
-      <Button
-        onClick={handleSignIn}
-        gridPosition={{ rowPos: "4", colPos: "2/3" }}
-        dataCy="sign-in-button"
+    <Container grid={{ rows: 12, cols: 12 }}>
+      <SignInContainer
+        grid={{ rows: "auto", cols: 1 }}
+        gap={{ row: "1rem" }}
+        gridPosition={[
+          { bp: 0, colPos: "span 12" },
+          { bp: theme.bp.px.md1, colPos: "8/13" },
+        ]}
+        minWidth="300px"
         fill
       >
-        Sign in
-      </Button>
+        <Container
+          noGrid
+          gridPosition={{ rowPos: 1 }}
+          id="email-or-username-container"
+          fill
+        >
+          <_Label htmlFor="email-or-username">Email / Username</_Label>
+          <Input
+            value={emailOrUsername}
+            onChange={handleEmailUsernameChange}
+            type="text"
+            id="email-or-username"
+            dataCy="email-or-username-input"
+            placeholder="Email or username"
+            fill
+          />
+        </Container>
+
+        <Container noGrid gridPosition={{ rowPos: 2 }} id="password-container">
+          <_Label htmlFor="password">Password</_Label>
+          <Input
+            value={password}
+            onChange={handlePasswordChange}
+            type="password"
+            id="password"
+            dataCy="password-input"
+            placeholder="Min 8 characters long"
+            fill
+          />
+        </Container>
+
+        <Container noGrid gridPosition={{ rowPos: 3 }} id="errors-container">
+          <Container noGrid dataCy="general-errors">
+            {error.text}
+          </Container>
+        </Container>
+
+        <Container noGrid gridPosition={{ rowPos: 4 }} id="password-container">
+          <Button onClick={handleSignIn} dataCy="sign-in-button" fill>
+            Sign in
+          </Button>
+        </Container>
+      </SignInContainer>
     </Container>
   );
 };
