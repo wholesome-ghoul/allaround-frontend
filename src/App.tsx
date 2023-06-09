@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Home from "./home";
 import SignUp from "./sign-up";
 import SignIn from "./sign-in";
+import ResetPassword from "./reset-password";
 import { useIsUserSignedIn, useLocalStorage } from "./hooks";
 import React from "react";
 
@@ -19,7 +20,7 @@ const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
   }
 
   if (isSignedIn || pass) {
-    return children
+    return children;
   }
 
   return <Navigate to="/sign-in" />;
@@ -40,11 +41,21 @@ const App = () => {
             </GuardedRoute>
           }
         />
+
         <Route
           path="/sign-in"
           element={
             <GuardedRoute pass={true}>
               <SignIn />
+            </GuardedRoute>
+          }
+        />
+
+        <Route
+          path="/reset-password"
+          element={
+            <GuardedRoute pass={true}>
+              <ResetPassword />
             </GuardedRoute>
           }
         />

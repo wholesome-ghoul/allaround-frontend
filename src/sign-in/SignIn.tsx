@@ -69,7 +69,7 @@ const SignIn = () => {
   };
 
   return (
-    <Container grid={{ rows: "auto", cols: 12 }}>
+    <Container grid={{ rows: "minmax(100px, auto)", cols: 12 }}>
       <Container
         grid={{ rows: "auto", cols: 1 }}
         gap={{ row: "1rem" }}
@@ -114,7 +114,7 @@ const SignIn = () => {
             placeholder="Min 8 characters long"
             fill
           />
-          <Link href="/forgot-password" fill styles={{ textAlign: "right" }}>
+          <Link href="/reset-password" fill styles={{ textAlign: "right" }}>
             Forgot password
           </Link>
         </Container>

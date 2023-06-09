@@ -167,7 +167,7 @@ const SignUp = () => {
   };
 
   return (
-    <Container grid={{ rows: "auto", cols: 12 }}>
+    <Container grid={{ rows: "minmax(100px, auto)", cols: 12 }}>
       <Container
         grid={{ rows: "auto", cols: 1 }}
         gap={{ row: "1rem" }}
