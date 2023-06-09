@@ -5,6 +5,7 @@ import {
   Heading,
   Input,
   Label,
+  Link,
 } from "@allaround/all-components";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -15,10 +16,6 @@ import { useLocalStorage } from "../hooks";
 const _Label = styled(Label)`
   display: block;
   margin: 10px 0;
-`;
-
-const SignInContainer = styled(Container)`
-  padding: 2.5rem;
 `;
 
 const SignIn = () => {
@@ -72,14 +69,15 @@ const SignIn = () => {
   };
 
   return (
-    <Container grid={{ rows: 12, cols: 12 }}>
-      <SignInContainer
+    <Container grid={{ rows: "auto", cols: 12 }}>
+      <Container
         grid={{ rows: "auto", cols: 1 }}
         gap={{ row: "1rem" }}
         gridPosition={[
-          { bp: 0, colPos: "span 12" },
-          { bp: theme.bp.px.md1, colPos: "8/13" },
+          { bp: 0, colPos: "span 12", rowPos: "3/9" },
+          { bp: theme.bp.px.md1, colPos: "8/13", rowPos: "3/9" },
         ]}
+        styles={{ justifyItems: "left", padding: "2.5rem" }}
         minWidth="300px"
         autoHor
         fill
@@ -98,31 +96,47 @@ const SignIn = () => {
           />
         </Container>
 
-        <Container noGrid id="password-container">
-          <_Label htmlFor="password">Password</_Label>
+        <Container id="password-container" grid="2x2">
+          <_Label
+            htmlFor="password"
+            gridPosition={{ rowPos: 1 }}
+            styles={{ justifySelf: "left" }}
+          >
+            Password
+          </_Label>
           <Input
             value={password}
             onChange={handlePasswordChange}
+            gridPosition={{ rowPos: 2, colPos: "span 2" }}
             type="password"
             id="password"
             dataCy="password-input"
             placeholder="Min 8 characters long"
             fill
           />
+          <Link href="/forgot-password" fill styles={{ textAlign: "right" }}>
+            Forgot password
+          </Link>
         </Container>
 
-        <Container noGrid id="errors-container">
-          <Container noGrid dataCy="general-errors">
-            {error.text}
-          </Container>
+        <Container noGrid dataCy="general-errors">
+          {error.text}
         </Container>
 
-        <Container noGrid id="password-container">
-          <Button onClick={handleSignIn} dataCy="sign-in-button" fill>
-            Sign in
-          </Button>
+        <Button onClick={handleSignIn} dataCy="sign-in-button" fill>
+          Sign in
+        </Button>
+
+        <Container
+          noGrid
+          id="anchor-container"
+          styles={{ textAlign: "center", marginTop: "1rem" }}
+        >
+          <Link href="/sign-up" fill>
+            Sign up
+          </Link>
         </Container>
-      </SignInContainer>
+      </Container>
     </Container>
   );
 };

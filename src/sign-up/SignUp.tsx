@@ -7,9 +7,11 @@ import {
   Input,
   Container,
   List,
+  Heading,
+  Link,
 } from "@allaround/all-components";
 
-import { postRequest } from "../utils";
+import { postRequest, theme } from "../utils";
 import { initialState, reducer } from "./state";
 import {
   passwordValidator,
@@ -165,84 +167,91 @@ const SignUp = () => {
   };
 
   return (
-    <Container grid={{ rows: "auto", cols: "3" }} gap={{ row: "1rem" }}>
+    <Container grid={{ rows: "auto", cols: 12 }}>
       <Container
-        noGrid
-        gridPosition={{ rowPos: "1", colPos: "2/3" }}
-        id="email-container"
-      >
-        <_Label htmlFor="email" size="medium">
-          Email
-        </_Label>
-        <_Input
-          value={state.email}
-          onChange={handleEmailChange}
-          type="email"
-          id="email"
-          placeholder="hello@address.com"
-          dataCy="email-input"
-          isError={state.emailError.show}
-          fill
-        />
-      </Container>
-      <Container
-        noGrid
-        gridPosition={{ rowPos: "2", colPos: "2/3" }}
-        id="username-container"
-      >
-        <_Label htmlFor="username" size="medium">
-          Username
-        </_Label>
-        <_Input
-          value={state.username}
-          onChange={handleUsernameChange}
-          type="text"
-          id="username"
-          dataCy="username-input"
-          placeholder="Min 4 characters long a-z, A-Z, 0-9, _-"
-          isError={state.usernameError.show}
-          fill
-        />
-      </Container>
-      <Container
-        noGrid
-        gridPosition={{ rowPos: "3", colPos: "2/3" }}
-        id="password-container"
-      >
-        <_Label htmlFor="password" size="medium">
-          Password
-        </_Label>
-        <_Input
-          value={state.password}
-          onChange={handlePasswordChange}
-          type="password"
-          id="password"
-          placeholder="Min 8 characters long"
-          dataCy="password-input"
-          isError={state.passwordError.show}
-          fill
-        />
-      </Container>
-      <Container
-        noGrid
-        gridPosition={{ rowPos: "4", colPos: "2/3" }}
-        id="errors-container"
-      >
-        <List items={state.emailError.texts} dataCy="email-errors"></List>
-        <List items={state.usernameError.texts} dataCy="username-errors"></List>
-        <List items={state.passwordError.texts} dataCy="password-errors"></List>
-        <Container noGrid dataCy="general-errors">
-          {state.error.texts}
-        </Container>
-      </Container>
-      <Button
-        onClick={signUp}
-        gridPosition={{ rowPos: "5", colPos: "2/3" }}
-        dataCy="sign-up-button"
+        grid={{ rows: "auto", cols: 1 }}
+        gap={{ row: "1rem" }}
+        gridPosition={[
+          { bp: 0, colPos: "span 12", rowPos: "3/9" },
+          { bp: theme.bp.px.md1, colPos: "8/13", rowPos: "3/9" },
+        ]}
+        styles={{ justifyItems: "left", padding: "2.5rem" }}
+        minWidth="300px"
+        autoHor
         fill
       >
-        Sign up
-      </Button>
+        <Heading.h1>Sign up</Heading.h1>
+        <Container noGrid id="email-container">
+          <_Label htmlFor="email">Email</_Label>
+          <_Input
+            value={state.email}
+            onChange={handleEmailChange}
+            type="email"
+            id="email"
+            placeholder="hello@address.com"
+            dataCy="email-input"
+            isError={state.emailError.show}
+            fill
+          />
+        </Container>
+
+        <Container noGrid id="username-container">
+          <_Label htmlFor="username">Username</_Label>
+          <_Input
+            value={state.username}
+            onChange={handleUsernameChange}
+            type="text"
+            id="username"
+            dataCy="username-input"
+            placeholder="Min 4 characters long a-z, A-Z, 0-9, _-"
+            isError={state.usernameError.show}
+            fill
+          />
+        </Container>
+
+        <Container noGrid id="password-container">
+          <_Label htmlFor="password">Password</_Label>
+          <_Input
+            value={state.password}
+            onChange={handlePasswordChange}
+            type="password"
+            id="password"
+            placeholder="Min 8 characters long"
+            dataCy="password-input"
+            isError={state.passwordError.show}
+            fill
+          />
+        </Container>
+
+        <Container noGrid id="errors-container">
+          <List items={state.emailError.texts} dataCy="email-errors"></List>
+          <List
+            items={state.usernameError.texts}
+            dataCy="username-errors"
+          ></List>
+          <List
+            items={state.passwordError.texts}
+            dataCy="password-errors"
+          ></List>
+          <Container noGrid dataCy="general-errors">
+            {state.error.texts}
+          </Container>
+        </Container>
+
+        <Button onClick={signUp} dataCy="sign-up-button" fill>
+          Sign up
+        </Button>
+
+        <Container
+          noGrid
+          id="anchor-container"
+          styles={{ textAlign: "center", marginTop: "1rem" }}
+        >
+          <Link href="/sign-in" fill>
+            Sign in
+          </Link>
+        </Container>
+      </Container>
     </Container>
   );
 };
