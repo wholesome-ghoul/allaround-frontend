@@ -1,48 +1,20 @@
-import { useState } from "react";
-import styled from "styled-components";
-import {
-  Button,
-  Container,
-  Heading,
-  Input,
-  Label,
-} from "@allaround/all-components";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Container } from "@allaround/all-components";
+import { useSearchParams } from "react-router-dom";
 
-import { postRequest, theme } from "../utils";
-
-const _Label = styled(Label)`
-  display: block;
-  margin: 10px 0;
-`;
+import { theme } from "../utils";
+import ResetPasswordForm from "./ResetPasswordForm";
+import NewPasswordForm from "./NewPasswordForm";
 
 const ResetPassword = () => {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState({ text: "", show: false });
-  const navigate = useNavigate();
+  const [isNewPasswordForm, setIsNewPasswordForm] = useState(false);
+  const [searchParams] = useSearchParams();
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  };
-
-  const handlePasswordReset = async () => {
-    const tryResetPassword = await postRequest(
-      `${process.env.SERVER}/api/users/reset-password`,
-      {
-        email,
-      },
-      200
-    );
-
-    if (!tryResetPassword.success) {
-      const text = tryResetPassword.data.error ?? "Oops, something went wrong";
-      setError({ text, show: true });
-      return;
+  useEffect(() => {
+    if (searchParams.get("resetToken")) {
+      setIsNewPasswordForm(true);
     }
-
-    setError({ text: "", show: false });
-    navigate("/sign-in");
-  };
+  }, []);
 
   return (
     <Container grid={{ rows: "minmax(100px, auto)", cols: 12 }}>
@@ -58,30 +30,7 @@ const ResetPassword = () => {
         autoHor
         fill
       >
-        <Heading.h1>Reset password</Heading.h1>
-        <Container noGrid id="email-container" fill>
-          <_Label htmlFor="email">Email</_Label>
-          <Input
-            value={email}
-            onChange={handleEmailChange}
-            type="email"
-            id="email-input"
-            dataCy="email-input"
-            fill
-          />
-        </Container>
-
-        <Container noGrid dataCy="general-errors">
-          {error.text}
-        </Container>
-
-        <Button
-          onClick={handlePasswordReset}
-          dataCy="reset-password-button"
-          fill
-        >
-          Reset Password
-        </Button>
+        {isNewPasswordForm ? <NewPasswordForm /> : <ResetPasswordForm />}
       </Container>
     </Container>
   );

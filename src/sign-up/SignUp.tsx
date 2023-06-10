@@ -11,14 +11,10 @@ import {
   Link,
 } from "@allaround/all-components";
 
-import { postRequest, theme } from "../utils";
+import { postRequest, theme, validators, ValidatorTemplate } from "../utils";
 import { initialState, reducer } from "./state";
-import {
-  passwordValidator,
-  usernameValidator,
-  emailValidator,
-  ValidatorTemplate,
-} from "./validators";
+
+const { emailValidator, usernameValidator, passwordValidator } = validators;
 
 const _Label = styled(Label)`
   display: block;
@@ -180,7 +176,7 @@ const SignUp = () => {
         autoHor
         fill
       >
-        <Heading.h1>Sign up</Heading.h1>
+        <Heading.h1>Sign Up</Heading.h1>
         <Container noGrid id="email-container">
           <_Label htmlFor="email">Email</_Label>
           <_Input
@@ -239,7 +235,7 @@ const SignUp = () => {
         </Container>
 
         <Button onClick={signUp} dataCy="sign-up-button" fill>
-          Sign up
+          Sign Up
         </Button>
 
         <Container
@@ -248,7 +244,7 @@ const SignUp = () => {
           styles={{ textAlign: "center", marginTop: "1rem" }}
         >
           <Link href="/sign-in" fill>
-            Sign in
+            Sign In
           </Link>
         </Container>
       </Container>

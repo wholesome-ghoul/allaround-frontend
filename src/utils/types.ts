@@ -1,3 +1,15 @@
+type Validator = {
+  [key: string]: {
+    valid: boolean;
+    text: string;
+  };
+};
+
+type ValidatorTemplate = {
+  valid: boolean;
+  texts: string[];
+};
+
 type UnkownData = {
   [key: string]: unknown;
 };
@@ -19,5 +31,30 @@ type SignUpUser = {
 };
 
 type PostBody = UnkownData | SignUpUser;
+type PutBody = PostBody;
 
-export type { ServerResponse, ServerError, ServerSuccess, PostBody };
+type DisplayError = {
+  texts: string[];
+  show: boolean;
+};
+
+type Credentials_ActionType =
+  | { type: "set_email"; email: string }
+  | { type: "set_username"; username: string }
+  | { type: "set_password"; password: string }
+  | { type: "set_username_error"; usernameError: DisplayError }
+  | { type: "set_password_error"; passwordError: DisplayError }
+  | { type: "set_email_error"; emailError: DisplayError }
+  | { type: "set_error"; error: DisplayError };
+
+export type {
+  ServerResponse,
+  ServerError,
+  ServerSuccess,
+  PostBody,
+  Validator,
+  ValidatorTemplate,
+  DisplayError,
+  Credentials_ActionType,
+  PutBody,
+};

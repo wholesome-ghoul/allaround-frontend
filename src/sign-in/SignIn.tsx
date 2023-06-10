@@ -82,7 +82,7 @@ const SignIn = () => {
         autoHor
         fill
       >
-        <Heading.h1>Sign in</Heading.h1>
+        <Heading.h1>Sign In</Heading.h1>
         <Container noGrid id="email-or-username-container" fill>
           <_Label htmlFor="email-or-username">Email / Username</_Label>
           <Input
@@ -124,7 +124,7 @@ const SignIn = () => {
         </Container>
 
         <Button onClick={handleSignIn} dataCy="sign-in-button" fill>
-          Sign in
+          Sign In
         </Button>
 
         <Container
@@ -133,7 +133,7 @@ const SignIn = () => {
           styles={{ textAlign: "center", marginTop: "1rem" }}
         >
           <Link href="/sign-up" fill>
-            Sign up
+            Sign Up
           </Link>
         </Container>
       </Container>
