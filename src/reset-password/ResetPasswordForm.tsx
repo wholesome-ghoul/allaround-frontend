@@ -68,7 +68,7 @@ const ResetPasswordForm = () => {
   return (
     <>
       <Heading.h1>Reset Password</Heading.h1>
-      <Container noGrid id="email-container" fill>
+      <Container noGrid id="email-container">
         <_Label htmlFor="email">Email</_Label>
         <Input
           value={email}

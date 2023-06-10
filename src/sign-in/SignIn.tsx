@@ -80,10 +80,9 @@ const SignIn = () => {
         styles={{ justifyItems: "left", padding: "2.5rem" }}
         minWidth="300px"
         autoHor
-        fill
       >
         <Heading.h1>Sign In</Heading.h1>
-        <Container noGrid id="email-or-username-container" fill>
+        <Container noGrid id="email-or-username-container">
           <_Label htmlFor="email-or-username">Email / Username</_Label>
           <Input
             value={emailOrUsername}

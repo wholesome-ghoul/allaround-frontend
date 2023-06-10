@@ -28,7 +28,6 @@ const ResetPassword = () => {
         styles={{ justifyItems: "left", padding: "2.5rem" }}
         minWidth="300px"
         autoHor
-        fill
       >
         {isNewPasswordForm ? <NewPasswordForm /> : <ResetPasswordForm />}
       </Container>

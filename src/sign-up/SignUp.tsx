@@ -174,7 +174,6 @@ const SignUp = () => {
         styles={{ justifyItems: "left", padding: "2.5rem" }}
         minWidth="300px"
         autoHor
-        fill
       >
         <Heading.h1>Sign Up</Heading.h1>
         <Container noGrid id="email-container">
