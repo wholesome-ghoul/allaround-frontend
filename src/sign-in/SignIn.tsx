@@ -11,18 +11,20 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { postRequest, theme } from "../utils";
-import { useLocalStorage } from "../hooks";
 
 const _Label = styled(Label)`
   display: block;
   margin: 10px 0;
 `;
 
-const SignIn = () => {
+type Props = {
+  setIsSignedIn: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const SignIn = ({ setIsSignedIn }: Props) => {
   const [emailOrUsername, setEmailOrUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({ text: "", show: false });
-  const [_, setIsSignedIn] = useLocalStorage("allaround-user");
   const navigate = useNavigate();
 
   const handleEmailUsernameChange = (
@@ -113,7 +115,12 @@ const SignIn = () => {
             placeholder="Min 8 characters long"
             fill
           />
-          <Link href="/reset-password" fill styles={{ textAlign: "right" }} dataCy="reset-password-link">
+          <Link
+            href="/reset-password"
+            fill
+            styles={{ textAlign: "right" }}
+            dataCy="reset-password-link"
+          >
             Forgot Password
           </Link>
         </Container>

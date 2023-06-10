@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import AllAround from "./allaround";
 import Home from "./home";
 import SignUp from "./sign-up";
 import SignIn from "./sign-in";
@@ -9,12 +10,15 @@ import React from "react";
 
 type GuardedRouteProps = {
   children: React.ReactNode;
+  isSignedIn: boolean;
   pass?: boolean;
 };
 
-const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
-  const { isSignedIn } = useIsUserSignedIn();
-
+const GuardedRoute = ({
+  children,
+  isSignedIn,
+  pass = false,
+}: GuardedRouteProps) => {
   if (isSignedIn && pass) {
     return <Navigate to="/" />;
   }
@@ -27,16 +31,28 @@ const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
 };
 
 const App = () => {
-  useLocalStorage("allaround-user");
+  const { isSignedIn, setIsSignedIn } = useIsUserSignedIn();
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            !isSignedIn ? (
+              <AllAround />
+            ) : (
+              <GuardedRoute isSignedIn={isSignedIn}>
+                <Home />
+              </GuardedRoute>
+            )
+          }
+        />
+
         <Route
           path="/sign-up"
           element={
-            <GuardedRoute pass={true}>
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
               <SignUp />
             </GuardedRoute>
           }
@@ -45,8 +61,8 @@ const App = () => {
         <Route
           path="/sign-in"
           element={
-            <GuardedRoute pass={true}>
-              <SignIn />
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
+              <SignIn setIsSignedIn={setIsSignedIn} />
             </GuardedRoute>
           }
         />
@@ -54,7 +70,7 @@ const App = () => {
         <Route
           path="/reset-password"
           element={
-            <GuardedRoute pass={true}>
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
               <ResetPassword />
             </GuardedRoute>
           }
