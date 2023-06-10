@@ -5,18 +5,18 @@ describe("Sign In", () => {
       cy.get("[data-cy=sign-in-button]").click();
       cy.get("[data-cy=general-errors]").should(
         "contain",
-        "username or email is required"
-      );
-
-      cy.get("[data-cy=email-or-username-input]").type("invalid-user");
-      cy.get("[data-cy=sign-in-button]").click();
-      cy.get("[data-cy=general-errors]").should(
-        "contain",
         "password is required"
       );
 
+      cy.get("[data-cy=password-input]").type("Password1!");
+      cy.get("[data-cy=sign-in-button]").click();
+      cy.get("[data-cy=general-errors]").should(
+        "contain",
+        "username or email is required"
+      );
+
       cy.get("[data-cy=email-or-username-input]").clear().type("invalid-user");
-      cy.get("[data-cy=password-input]").type("invalid-password");
+      cy.get("[data-cy=password-input]").clear().type("Password1!");
       cy.get("[data-cy=sign-in-button]").click();
       cy.get("[data-cy=general-errors]").should(
         "contain",

@@ -1,16 +1,4 @@
-export type DisplayError = {
-  texts: string[];
-  show: boolean;
-};
-
-export type ACTIONTYPE =
-  | { type: "set_email"; email: string }
-  | { type: "set_username"; username: string }
-  | { type: "set_password"; password: string }
-  | { type: "set_username_error"; usernameError: DisplayError }
-  | { type: "set_password_error"; passwordError: DisplayError }
-  | { type: "set_email_error"; emailError: DisplayError }
-  | { type: "set_error"; error: DisplayError };
+import { DisplayError, Credentials_ActionType } from "../utils";
 
 const initialError: DisplayError = {
   texts: [],
@@ -27,7 +15,10 @@ const initialState = {
   error: initialError,
 };
 
-const reducer = (state: typeof initialState, action: ACTIONTYPE) => {
+const reducer = (
+  state: typeof initialState,
+  action: Credentials_ActionType
+) => {
   switch (action.type) {
     case "set_email":
       return { ...state, email: action.email };

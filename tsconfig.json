@@ -6,5 +6,5 @@
     "types": ["cypress", "jest", "node"]
   },
   "include": ["src", "**/*.ts", "public/service-worker.js"],
-  "exclude": ["node_modules", "dist", "cypress", "cypress.config.ts"]
+  "exclude": ["node_modules", "dist"]
 }

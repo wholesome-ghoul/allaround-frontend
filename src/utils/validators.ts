@@ -1,14 +1,4 @@
-type Validator = {
-  [key: string]: {
-    valid: boolean;
-    text: string;
-  };
-};
-
-type ValidatorTemplate = {
-  valid: boolean;
-  texts: string[];
-};
+import { Validator, ValidatorTemplate } from "./types";
 
 const validatorTemplate = (validator: Validator): ValidatorTemplate => ({
   valid: Object.values(validator).every((value) => value.valid),
@@ -19,11 +9,18 @@ const validatorTemplate = (validator: Validator): ValidatorTemplate => ({
 
 const emailValidator = (email: string) => {
   const isNonEmpty = email.length > 0;
+  const isValidEmail = !!email.match(
+    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
 
   const validator = {
     isNonEmpty: {
       valid: isNonEmpty,
-      text: "Email must not be empty",
+      text: "Email is required",
+    },
+    isValidEmail: {
+      valid: isValidEmail,
+      text: "Please enter valid email",
     },
   };
 
@@ -63,7 +60,7 @@ const passwordValidator = (password: string) => {
   const validator = {
     hasNonAlphaNumeric: {
       valid: hasNonAlphaNumeric,
-      text: "Password must contain at least 1 non-alphanumeric character (!@#$...)",
+      text: "Password must contain at least 1 symbol (!@#$...)",
     },
     hasNumeric: {
       valid: hasNumeric,
@@ -86,5 +83,10 @@ const passwordValidator = (password: string) => {
   return validatorTemplate(validator);
 };
 
-export { emailValidator, usernameValidator, passwordValidator };
-export type { Validator, ValidatorTemplate };
+const validators = {
+  emailValidator,
+  usernameValidator,
+  passwordValidator,
+};
+
+export default validators;
