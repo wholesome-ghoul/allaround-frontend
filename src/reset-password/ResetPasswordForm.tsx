@@ -39,6 +39,7 @@ const ResetPasswordForm = () => {
     }
 
     setEmailErrors({ texts, show });
+    setMessage({ text: "", show: false });
   };
 
   const handleSendResetLink = async () => {
@@ -61,7 +62,7 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    setMessage({ text: "Success! Please check your email.", show: true });
+    setMessage({ text: "Success! Please check your email", show: true });
   };
 
   return (
@@ -82,16 +83,16 @@ const ResetPasswordForm = () => {
       </Container>
 
       <Container noGrid id="errors-container">
-        <List items={emailErrors.texts} dataCy="confirm-password-errors"></List>
+        <List items={emailErrors.texts} dataCy="email-errors" />
 
-        <Container noGrid dataCy="general">
+        <Container noGrid dataCy="general-messages">
           {message.text}
         </Container>
       </Container>
 
       <Button
         onClick={handleSendResetLink}
-        dataCy="send-reste-link-button"
+        dataCy="send-reset-link-button"
         fill
       >
         Send reset link

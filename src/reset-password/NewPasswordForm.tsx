@@ -82,7 +82,12 @@ const NewPasswordForm = () => {
   };
 
   const handlePasswordReset = async () => {
-    if (passwordErrors.show || confirmPasswordErrors.show) {
+    if (
+      password.length === 0 ||
+      confirmPassword.length === 0 ||
+      passwordErrors.show ||
+      confirmPasswordErrors.show
+    ) {
       return;
     }
 
@@ -100,7 +105,7 @@ const NewPasswordForm = () => {
     );
 
     if (!tryPasswordReset.success) {
-      setGeneralError("Oops, semething went wrong!");
+      setGeneralError("Oops, something went wrong");
       return;
     }
 

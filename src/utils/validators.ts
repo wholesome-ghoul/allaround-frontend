@@ -20,7 +20,7 @@ const emailValidator = (email: string) => {
     },
     isValidEmail: {
       valid: isValidEmail,
-      text: "Invaild Email",
+      text: "Please enter valid email",
     },
   };
 

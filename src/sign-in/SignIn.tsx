@@ -114,8 +114,8 @@ const SignIn = () => {
             placeholder="Min 8 characters long"
             fill
           />
-          <Link href="/reset-password" fill styles={{ textAlign: "right" }}>
-            Forgot password
+          <Link href="/reset-password" fill styles={{ textAlign: "right" }} dataCy="reset-password-link">
+            Forgot Password
           </Link>
         </Container>
 
