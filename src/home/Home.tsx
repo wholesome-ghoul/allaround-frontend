@@ -4,10 +4,11 @@ import {
   Heading,
   Icons,
   Button,
+  Text,
   Container,
   hooks,
 } from "@allaround/all-components";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { theme } from "../utils";
 
@@ -24,6 +25,7 @@ const Home = () => {
       setIsNavbar(true);
     } else {
       setIsNavbar(false);
+      setIsSidebarOpen(false);
     }
   });
 
@@ -32,10 +34,6 @@ const Home = () => {
     (event: any) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setIsSidebarOpen(false);
-
-        document.body.style.overflow = "visible";
-        if (navbarContainerRef.current)
-          navbarContainerRef.current.style.opacity = "1";
       }
     },
     document
@@ -43,11 +41,19 @@ const Home = () => {
 
   const openSidebar = () => {
     setIsSidebarOpen(true);
-
-    document.body.style.overflow = "hidden";
-    if (navbarContainerRef.current)
-      navbarContainerRef.current.style.opacity = "0.3";
   };
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = "hidden";
+      if (navbarContainerRef.current)
+        navbarContainerRef.current.style.opacity = "0.3";
+    } else {
+      document.body.style.overflow = "visible";
+      if (navbarContainerRef.current)
+        navbarContainerRef.current.style.opacity = "1";
+    }
+  }, [isSidebarOpen]);
 
   return (
     <>
@@ -63,13 +69,19 @@ const Home = () => {
             <Navbar sticky>
               <Button
                 onClick={openSidebar}
-                icon={<Icons.MoonIcon size="large" />}
+                icon={<Icons.HamburgerIcon size="large" />}
                 noBorder
                 transparent
               />
               <Button
                 onClick={() => {}}
-                icon={<Icons.SunIcon size="medium" />}
+                icon={<Icons.AaIcon size="xlarge" />}
+                noBorder
+                transparent
+              />
+              <Button
+                onClick={() => {}}
+                icon={<Icons.SunIcon size="large" />}
                 gridPosition={{ colPos: "3/4" }}
                 transparent
                 noBorder
@@ -110,27 +122,29 @@ const Home = () => {
               transform: isSidebarOpen ? "translateX(0)" : "translateX(-100%)",
             }}
           >
-            <Sidebar innerRef={sidebarRef} overlap>
+            <Sidebar
+              innerRef={sidebarRef}
+              overlap
+              styles={{ justifyItems: "left" }}
+            >
               <Button
                 onClick={() => {}}
-                icon={<Icons.MoonIcon size="large" />}
-                noBorder
-                transparent
-              ></Button>
-              <Button
-                onClick={() => {}}
-                icon={<Icons.SunIcon size="medium" />}
+                icon={<Icons.SunIcon size="large" />}
                 gridPosition={{ rowPos: "3/4" }}
                 transparent
                 noBorder
-              ></Button>
+              >
+                <Text size="medium">Change Theme</Text>
+              </Button>
               <Button
                 onClick={() => {}}
-                icon={<Icons.MoonIcon size="medium" />}
+                icon={<Icons.MoonIcon size="large" />}
                 gridPosition={{ rowPos: "4/5" }}
                 transparent
                 noBorder
-              ></Button>
+              >
+                <Text size="medium">Change Theme</Text>
+              </Button>
             </Sidebar>
           </Container>
         </>
@@ -144,7 +158,7 @@ const Home = () => {
           <Sidebar sticky>
             <Button
               onClick={() => {}}
-              icon={<Icons.MoonIcon size="large" />}
+              icon={<Icons.AaIcon size="xlarge" />}
               noBorder
               transparent
             ></Button>
