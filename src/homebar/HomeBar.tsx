@@ -69,7 +69,11 @@ const HomeBar = ({ children }: Props) => {
             }}
             innerRef={navbarContainerRef}
           >
-            <Navbar sticky>
+            <Navbar
+              styles={{ padding: "0 1rem" }}
+              grid={{ cols: "repeat(12, 1fr)", rows: 1 }}
+              sticky
+            >
               <Button
                 onClick={openSidebar}
                 icon={<Icons.HamburgerIcon size="large" />}
@@ -78,23 +82,10 @@ const HomeBar = ({ children }: Props) => {
               />
               <Button
                 onClick={() => {}}
-                icon={<Icons.AaIcon size="xlarge" />}
+                icon={<Icons.DefaultAvatarIcon size="large" />}
+                gridPosition={{ colPos: "12/13" }}
                 noBorder
                 transparent
-              />
-              <Button
-                onClick={() => {}}
-                icon={<Icons.SunIcon size="large" />}
-                gridPosition={{ colPos: "3/4" }}
-                transparent
-                noBorder
-              />
-              <Button
-                onClick={() => {}}
-                icon={<Icons.MoonIcon size="medium" />}
-                gridPosition={{ colPos: "4/5" }}
-                transparent
-                noBorder
               />
             </Navbar>
 
@@ -134,15 +125,6 @@ const HomeBar = ({ children }: Props) => {
               >
                 <Text size="medium">Change Theme</Text>
               </Button>
-              <Button
-                onClick={() => {}}
-                icon={<Icons.MoonIcon size="large" />}
-                gridPosition={{ rowPos: "4/5" }}
-                transparent
-                noBorder
-              >
-                <Text size="medium">Change Theme</Text>
-              </Button>
             </Sidebar>
           </Container>
         </>
@@ -164,13 +146,6 @@ const HomeBar = ({ children }: Props) => {
               onClick={() => {}}
               icon={<Icons.SunIcon size="medium" />}
               gridPosition={{ rowPos: "3/4" }}
-              transparent
-              noBorder
-            ></Button>
-            <Button
-              onClick={() => {}}
-              icon={<Icons.MoonIcon size="medium" />}
-              gridPosition={{ rowPos: "4/5" }}
               transparent
               noBorder
             ></Button>
