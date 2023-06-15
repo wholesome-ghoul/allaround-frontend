@@ -1,20 +1,25 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
+import AllAround from "./allaround";
 import Home from "./home";
+import HomeBar from "./homebar";
 import SignUp from "./sign-up";
 import SignIn from "./sign-in";
 import ResetPassword from "./reset-password";
-import { useIsUserSignedIn, useLocalStorage } from "./hooks";
+import { useIsUserSignedIn } from "./hooks";
 import React from "react";
 
 type GuardedRouteProps = {
   children: React.ReactNode;
+  isSignedIn: boolean;
   pass?: boolean;
 };
 
-const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
-  const { isSignedIn } = useIsUserSignedIn();
-
+const GuardedRoute = ({
+  children,
+  isSignedIn,
+  pass = false,
+}: GuardedRouteProps) => {
   if (isSignedIn && pass) {
     return <Navigate to="/" />;
   }
@@ -27,17 +32,35 @@ const GuardedRoute = ({ children, pass = false }: GuardedRouteProps) => {
 };
 
 const App = () => {
-  useLocalStorage("allaround-user");
+  const { isSignedIn, setIsSignedIn } = useIsUserSignedIn();
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            !isSignedIn ? (
+              <HomeBar>
+                <AllAround />
+              </HomeBar>
+            ) : (
+              <GuardedRoute isSignedIn={isSignedIn}>
+                <HomeBar>
+                  <Home />
+                </HomeBar>
+              </GuardedRoute>
+            )
+          }
+        />
+
         <Route
           path="/sign-up"
           element={
-            <GuardedRoute pass={true}>
-              <SignUp />
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
+              <HomeBar>
+                <SignUp />
+              </HomeBar>
             </GuardedRoute>
           }
         />
@@ -45,8 +68,10 @@ const App = () => {
         <Route
           path="/sign-in"
           element={
-            <GuardedRoute pass={true}>
-              <SignIn />
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
+              <HomeBar>
+                <SignIn setIsSignedIn={setIsSignedIn} />
+              </HomeBar>
             </GuardedRoute>
           }
         />
@@ -54,8 +79,10 @@ const App = () => {
         <Route
           path="/reset-password"
           element={
-            <GuardedRoute pass={true}>
-              <ResetPassword />
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
+              <HomeBar>
+                <ResetPassword />
+              </HomeBar>
             </GuardedRoute>
           }
         />
