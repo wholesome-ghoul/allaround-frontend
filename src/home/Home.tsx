@@ -1,10 +1,9 @@
-import ZoomFocus from "../playground/ZoomFocus";
+import Upload from "../upload-section";
 
 const Home = () => {
   return (
     <>
-      <h1>welcome user</h1>
-      <ZoomFocus />
+      <Upload.Youtube />
     </>
   );
 };
