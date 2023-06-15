@@ -1,11 +1,10 @@
-import BarChart from "../playground/BarChart";
-import Tmp from "../playground/Tmp";
+import ZoomFocus from "../playground/ZoomFocus";
 
 const Home = () => {
   return (
     <>
       <h1>welcome user</h1>
-      <Tmp />
+      <ZoomFocus />
     </>
   );
 };
