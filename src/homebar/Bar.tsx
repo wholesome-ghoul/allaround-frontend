@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
   Navbar,
   Sidebar,
@@ -5,11 +6,12 @@ import {
   Button,
   Text,
   Container,
+  Dropdown,
   hooks,
 } from "@allaround/all-components";
 import { useEffect, useRef, useState } from "react";
 
-import { theme } from "../utils";
+import { theme, routes } from "../utils";
 
 const { useResizeObserver, useEventListener } = hooks;
 
@@ -17,11 +19,19 @@ type Props = {
   contentRef: React.RefObject<HTMLDivElement>;
 };
 
+const dropdownIndices: { [key: string]: number } = {
+  [routes.create.youtubePost]: 0,
+} as const;
+
 const Bar = ({ contentRef }: Props) => {
   const [needNavbar, setIsNavbar] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activePage, setActivePage] = useState(window.location.pathname);
+  const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useResizeObserver(document.body, (_entries: any) => {
     if (window.innerWidth < theme.bp.nums.md2) {
@@ -56,8 +66,19 @@ const Bar = ({ contentRef }: Props) => {
     }
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    setSelectedIndex(dropdownIndices[activePage]);
+  }, [activePage]);
+
   const openSidebar = () => {
     setIsSidebarOpen(true);
+  };
+
+  const handleActivePage = (page: string) => () => {
+    setActivePage(page);
+    setIsSidebarOpen(false);
+    setIsDropdownOpen(false);
+    navigate(page);
   };
 
   return (
@@ -88,7 +109,7 @@ const Bar = ({ contentRef }: Props) => {
           <Container
             noGrid
             styles={{
-              position: "absolute",
+              position: "fixed",
               top: "0",
               left: "0",
               width: "100%",
@@ -98,38 +119,67 @@ const Bar = ({ contentRef }: Props) => {
               transform: isSidebarOpen ? "translateX(0)" : "translateX(-100%)",
             }}
           >
-            <Sidebar
-              innerRef={sidebarRef}
-              overlap
-              styles={{ justifyItems: "left" }}
-            >
+            <Sidebar innerRef={sidebarRef} overlap noGrid>
               <Button
-                onClick={() => {}}
-                icon={<Icons.SunIcon size="large" />}
-                gridPosition={{ rowPos: "3/4" }}
-                transparent
+                onClick={handleActivePage(routes.home)}
+                icon={<Icons.AaIcon size="large" />}
+                transparent={activePage !== routes.home}
                 noBorder
+                fill
               >
-                <Text size="medium">Change Theme</Text>
+                <Text size="medium">Home</Text>
               </Button>
+
+              <Dropdown
+                icon={<Icons.CreateIcon size="medium" />}
+                selectedIndex={selectedIndex}
+                isOpen={isDropdownOpen}
+                setIsOpen={setIsDropdownOpen}
+                text="Create"
+                activeIndicator
+                enableArrow
+                fill
+              >
+                <Button
+                  onClick={handleActivePage(routes.create.youtubePost)}
+                  icon={<Icons.CreateIcon size="small" />}
+                  transparent={activePage !== routes.create.youtubePost}
+                  noBorder
+                  fill
+                >
+                  <Text size="small">Youtube</Text>
+                </Button>
+              </Dropdown>
             </Sidebar>
           </Container>
         </>
       ) : (
         <Sidebar sticky>
           <Button
-            onClick={() => {}}
+            onClick={handleActivePage(routes.home)}
             icon={<Icons.AaIcon size="xlarge" />}
+            transparent={activePage !== routes.home}
             noBorder
-            transparent
-          ></Button>
-          <Button
-            onClick={() => {}}
-            icon={<Icons.SunIcon size="medium" />}
-            gridPosition={{ rowPos: "3/4" }}
-            transparent
-            noBorder
-          ></Button>
+          />
+
+          <Dropdown
+            icon={<Icons.CreateIcon size="medium" />}
+            selectedIndex={selectedIndex}
+            isOpen={isDropdownOpen}
+            setIsOpen={setIsDropdownOpen}
+            popup
+            fill
+          >
+            <Button
+              onClick={handleActivePage(routes.create.youtubePost)}
+              icon={<Icons.CreateIcon size="small" />}
+              transparent={activePage !== routes.create.youtubePost}
+              noBorder
+              fill
+            >
+              <Text size="small">Youtube</Text>
+            </Button>
+          </Dropdown>
         </Sidebar>
       )}
     </>

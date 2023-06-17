@@ -8,8 +8,8 @@ const YoutubeUpload = () => {
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState([""]);
 
-  const handleTagsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTags(e.target.value.split(","));
+  const handleTagsChange = (values: string[]) => {
+    setTags(values);
   };
 
   return (
@@ -39,14 +39,70 @@ const YoutubeUpload = () => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           label="Description"
-          copyHandler={(e) => console.log(e)}
-          delHandler={(e) => console.log(e)}
         />
         <Tags
           placeholder="Add tags"
           max={500}
-          rows={15}
-          values={tags}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
+          onChange={handleTagsChange}
+          label="Tags"
+        />
+        <Tags
+          placeholder="Add tags"
+          max={500}
           onChange={handleTagsChange}
           label="Tags"
         />
