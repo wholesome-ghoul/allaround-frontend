@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container, Textarea, Tags } from "@allaround/all-components";
+import { Container, Textarea, Tags, Select } from "@allaround/all-components";
 
 import { theme } from "../../utils";
 
@@ -46,66 +46,11 @@ const YoutubeUpload = () => {
           onChange={handleTagsChange}
           label="Tags"
         />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
-        <Tags
-          placeholder="Add tags"
-          max={500}
-          onChange={handleTagsChange}
-          label="Tags"
-        />
+        <Select>
+          <Select.Option value="public">Public</Select.Option>
+          <Select.Option value="private">Private</Select.Option>
+          <Select.Option value="unlisted">Unlisted</Select.Option>
+        </Select>
       </Container>
     </Container>
   );

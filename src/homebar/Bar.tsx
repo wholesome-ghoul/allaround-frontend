@@ -31,6 +31,7 @@ const Bar = ({ contentRef }: Props) => {
   const [selectedIndex, setSelectedIndex] = useState<number | undefined>();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
+  const dropdownItemsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   useResizeObserver(document.body, (_entries: any) => {
@@ -47,6 +48,19 @@ const Bar = ({ contentRef }: Props) => {
     (event: any) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
         setIsSidebarOpen(false);
+      }
+    },
+    document
+  );
+
+  useEventListener(
+    "mousedown",
+    (event: any) => {
+      if (
+        dropdownItemsRef.current &&
+        !dropdownItemsRef.current.contains(event.target)
+      ) {
+        setIsDropdownOpen(false);
       }
     },
     document
@@ -167,6 +181,7 @@ const Bar = ({ contentRef }: Props) => {
             selectedIndex={selectedIndex}
             isOpen={isDropdownOpen}
             setIsOpen={setIsDropdownOpen}
+            dropdownItemsRef={dropdownItemsRef}
             popup
             fill
           >
@@ -174,6 +189,15 @@ const Bar = ({ contentRef }: Props) => {
               onClick={handleActivePage(routes.create.youtubePost)}
               icon={<Icons.CreateIcon size="small" />}
               transparent={activePage !== routes.create.youtubePost}
+              noBorder
+              fill
+            >
+              <Text size="small">Youtube</Text>
+            </Button>
+            <Button
+              onClick={handleActivePage(routes.home)}
+              icon={<Icons.CreateIcon size="small" />}
+              transparent={activePage !== routes.home}
               noBorder
               fill
             >
