@@ -1,12 +1,25 @@
 import { useState } from "react";
-import { Container, Textarea, Tags, Select } from "@allaround/all-components";
+import {
+  Container,
+  Textarea,
+  Tags,
+  Select,
+  Upload,
+  Scheduler,
+} from "@allaround/all-components";
 
-import { theme } from "../../utils";
+import { DisplayError, theme } from "../../utils";
 
 const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState([""]);
+  const [category, setCategory] = useState(0);
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<DisplayError>({
+    texts: [],
+    show: false,
+  });
 
   const handleTagsChange = (values: string[]) => {
     setTags(values);
@@ -46,11 +59,29 @@ const YoutubeUpload = () => {
           onChange={handleTagsChange}
           label="Tags"
         />
-        <Select>
-          <Select.Option value="public">Public</Select.Option>
-          <Select.Option value="private">Private</Select.Option>
-          <Select.Option value="unlisted">Unlisted</Select.Option>
-        </Select>
+        <Select
+          selectedIndex={category}
+          setSelectedIndex={setCategory}
+          options={[
+            { label: "Film & Animation", value: 1 },
+            { label: "Autos & Vehicles", value: 2 },
+          ]}
+          fill
+        />
+
+        <Container noGrid>
+          <Upload
+            text="Upload thumbnail"
+            accept={["image/png"]}
+            maxSize={5 * 1024}
+            isError={error.show}
+            handleError={({ text, show }) => setError({ texts: [text], show })}
+            setFile={setFile}
+          />
+          <Container noGrid>{error.show && error.texts.join("")}</Container>
+        </Container>
+
+        <Scheduler />
       </Container>
     </Container>
   );

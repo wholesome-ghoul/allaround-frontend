@@ -194,15 +194,6 @@ const Bar = ({ contentRef }: Props) => {
             >
               <Text size="small">Youtube</Text>
             </Button>
-            <Button
-              onClick={handleActivePage(routes.home)}
-              icon={<Icons.CreateIcon size="small" />}
-              transparent={activePage !== routes.home}
-              noBorder
-              fill
-            >
-              <Text size="small">Youtube</Text>
-            </Button>
           </Dropdown>
         </Sidebar>
       )}
