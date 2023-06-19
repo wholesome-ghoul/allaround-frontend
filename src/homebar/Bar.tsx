@@ -128,7 +128,7 @@ const Bar = ({ contentRef }: Props) => {
               left: "0",
               width: "100%",
               height: "100%",
-              zIndex: 100,
+              zIndex: 1001,
               transition: "transform 0.3s ease",
               transform: isSidebarOpen ? "translateX(0)" : "translateX(-100%)",
             }}
