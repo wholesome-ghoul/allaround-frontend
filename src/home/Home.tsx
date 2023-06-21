@@ -1,9 +1,9 @@
-import Upload from "../upload-section";
+import Accounts from "../accounts";
 
 const Home = () => {
   return (
     <>
-      hello
+      <Accounts />
     </>
   );
 };

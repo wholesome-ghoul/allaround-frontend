@@ -152,6 +152,7 @@ const Bar = ({ contentRef }: Props) => {
                 text="Create"
                 activeIndicator
                 enableArrow
+                noDropperBorder
                 fill
               >
                 <Button
@@ -162,6 +163,15 @@ const Bar = ({ contentRef }: Props) => {
                   fill
                 >
                   <Text size="small">Youtube</Text>
+                </Button>
+                <Button
+                  onClick={handleActivePage(routes.create.youtubePost)}
+                  icon={<Icons.CreateIcon size="small" />}
+                  transparent={activePage !== routes.create.youtubePost}
+                  noBorder
+                  fill
+                >
+                  <Text size="small">Tiktok</Text>
                 </Button>
               </Dropdown>
             </Sidebar>
@@ -184,6 +194,7 @@ const Bar = ({ contentRef }: Props) => {
             dropdownItemsRef={dropdownItemsRef}
             popup
             fill
+            noDropperBorder
           >
             <Button
               onClick={handleActivePage(routes.create.youtubePost)}

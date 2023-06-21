@@ -13,12 +13,12 @@ const useIsUserSignedIn = (defaultValue: boolean = false) => {
     if (!isSignedIn) return;
 
     const isUserSignedIn = async () => {
-      const trySignIn = await postRequest(
-        `${process.env.SERVER}/api/users/is-signed-in`,
-        {},
-        200,
-        { credentials: "include" }
-      );
+      const trySignIn = await postRequest({
+        url: `${process.env.SERVER}/api/users/is-signed-in`,
+        body: {},
+        expectedStatus: 200,
+        credentials: "include",
+      });
 
       setIsSignedIn(trySignIn.success);
     };

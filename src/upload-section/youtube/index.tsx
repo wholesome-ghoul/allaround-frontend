@@ -69,7 +69,7 @@ const YoutubeUpload = () => {
               file={video}
               gridPosition={[
                 { bp: 0, colPos: 1, rowPos: 1 },
-                { bp: theme.bp.px.md2, colPos: "8/13", rowPos: "2/3" },
+                { bp: theme.bp.px.md2, colPos: "8/13", rowPos: "1/3" },
               ]}
             />
 

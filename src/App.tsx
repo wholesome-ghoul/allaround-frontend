@@ -71,9 +71,7 @@ const App = () => {
           path={routes.signUp}
           element={
             <GuardedRoute pass={true} isSignedIn={isSignedIn}>
-              <HomeBar>
-                <SignUp />
-              </HomeBar>
+              <SignUp />
             </GuardedRoute>
           }
         />
@@ -82,9 +80,7 @@ const App = () => {
           path={routes.signIn}
           element={
             <GuardedRoute pass={true} isSignedIn={isSignedIn}>
-              <HomeBar>
-                <SignIn setIsSignedIn={setIsSignedIn} />
-              </HomeBar>
+              <SignIn setIsSignedIn={setIsSignedIn} />
             </GuardedRoute>
           }
         />
@@ -93,9 +89,7 @@ const App = () => {
           path={routes.resetPassword}
           element={
             <GuardedRoute pass={true} isSignedIn={isSignedIn}>
-              <HomeBar>
-                <ResetPassword />
-              </HomeBar>
+              <ResetPassword />
             </GuardedRoute>
           }
         />

@@ -1,23 +1,23 @@
 import { ServerResponse, PostBody } from "./types";
 
-type PostRequest = {
+type DelRequest = {
   url: string;
-  body: PostBody;
+  body?: PostBody;
   expectedStatus?: number;
   credentials?: RequestCredentials;
 };
 
-const postRequest = async ({
+const deleteRequest = async ({
   url,
   body,
   expectedStatus = 200,
   credentials = "omit",
-}: PostRequest) => {
+}: DelRequest) => {
   let data: ServerResponse = {};
 
   try {
     const response = await fetch(url, {
-      method: "post",
+      method: "delete",
       credentials,
       headers: {
         "Content-Type": "application/json",
@@ -36,4 +36,4 @@ const postRequest = async ({
   }
 };
 
-export default postRequest;
+export default deleteRequest;
