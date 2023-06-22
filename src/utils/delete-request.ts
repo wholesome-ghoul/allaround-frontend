@@ -30,6 +30,7 @@ const deleteRequest = async ({
 
     return { data, status, success: status === expectedStatus };
   } catch (e) {
+    console.log(e);
     data.error = "something went wrong";
 
     return { data, success: false };

@@ -10,6 +10,10 @@ const SocialAccountMap: { [key: string]: JSX.Element } = {
   tiktok: <Icons.TiktokIcon size="small" />,
 };
 
+const SocialOauthMap: { [key: string]: string } = {
+  youtube: `${process.env.SERVER}/api/oauth/google`,
+};
+
 const getSocials = (acc: any) => {
   let socials: Social[] = [];
 
@@ -23,11 +27,13 @@ const getSocials = (acc: any) => {
 
       const enabled = actualService[serviceName].schema?.isActive;
       const icon = SocialAccountMap[serviceName];
-      const name = capitalize(serviceName)!;
+      const value = serviceName;
+      const name = capitalize(value)!;
 
       return {
         enabled,
         name,
+        value,
         icon,
       };
     });
@@ -48,4 +54,8 @@ const getAccount = (acc: any) => {
   };
 };
 
-export { getSocials, getAccount };
+const getSocialOauthUrl = (social: string) => {
+  return SocialOauthMap[social];
+};
+
+export { getSocials, getAccount, getSocialOauthUrl };

@@ -9,13 +9,13 @@ import {
 
 import { deleteRequest, getRequest, postRequest } from "../utils";
 import Account from "./Account";
-import type { AccountType } from "./types";
-import { getAccount } from "./utils";
+import type { AccountType, Social } from "./types";
+import { getAccount, getSocialOauthUrl } from "./utils";
 
 const { useConfirm } = hooks;
 
-const toggleEnabled = (name: string) => (social: any) => {
-  if (social.name === name) {
+const toggleEnabled = (value: string) => (social: Social) => {
+  if (social.value === value) {
     return {
       ...social,
       enabled: !social.enabled,
@@ -26,36 +26,29 @@ const toggleEnabled = (name: string) => (social: any) => {
 };
 
 const updateAccount =
-  (name: string) => (id: string) => (account: AccountType) => {
+  (value: string) => (id: string) => (account: AccountType) => {
     if (account.id === id) {
       return {
         ...account,
-        socials: account.socials.map(toggleEnabled(name)),
+        socials: account.socials.map(toggleEnabled(value)),
       };
     }
 
     return account;
   };
 
+const isSocialEnabled = (accountId: string, value: string) => {
+  return (account: AccountType) => {
+    if (account.id === accountId) {
+      return account.socials.find((social) => social.value === value)?.enabled;
+    }
+
+    return false;
+  };
+};
+
 const Accounts = () => {
   const [accounts, setAccounts] = useState<AccountType[]>([]);
-
-  const confirm1 = (arg1: string) => {
-    console.log("confirmed 1" + arg1);
-  };
-  const confirm2 = () => {
-    console.log("confirmed 2");
-  };
-  const [prompt1, confirmPrompt] = useConfirm(confirm1, {
-    prompt: "Are you sure?",
-    confirm: "Yes",
-    cancel: "No",
-  });
-  const [prompt2] = useConfirm(confirm2, {
-    prompt: "Are you sure?",
-    confirm: "Yes",
-    cancel: "No",
-  });
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -76,25 +69,74 @@ const Accounts = () => {
     fetchAccounts();
   }, []);
 
-  const handleSocialClick = (id: string) => (name: string) => {
-    // TODO: confirm
-    setAccounts((prev) => [...prev.map(updateAccount(name)(id))]);
-  };
+  const [handleSocialClick, confirmPrompt] = useConfirm(
+    async (id: string, value: string) => {
+      const url = getSocialOauthUrl(value);
 
-  const handleAccountRemove = async (accountId: string) => {
-    // TODO: confirm
-    const response = await deleteRequest({
-      url: `${process.env.SERVER}/api/accounts`,
-      body: {
-        accountId,
-      },
-      credentials: "include",
-    });
+      if (!accounts.find(isSocialEnabled(id, value))) {
+        const response = await getRequest({
+          url,
+          query: { accountId: id },
+          credentials: "include",
+        });
 
-    console.log(response.data);
+        if (response.success) {
+          const authUrl = response.data.authorizationUrl as string;
 
-    setAccounts((prev) => [...prev.filter((acc) => acc.id !== accountId)]);
-  };
+          if (authUrl) {
+            window.open(authUrl, "_blank")?.focus();
+            // TODO: update accounts
+          }
+        } else {
+          console.log(response.data.error);
+        }
+      } else {
+        const response = await deleteRequest({
+          url,
+          body: { accountId: id },
+          expectedStatus: 201,
+          credentials: "include",
+        });
+
+        if (response.success) {
+          setAccounts((prev) => [...prev.map(updateAccount(value)(id))]);
+        } else {
+          console.log(response.data.error);
+        }
+      }
+    },
+    {
+      prompt: 'Are you sure you want to remove "#INJECT_NAME#"?',
+      confirm: "Yes",
+      cancel: "No",
+      injectText: true,
+      enableSkip: true,
+    }
+  );
+
+  const [handleAccountRemove] = useConfirm(
+    async (accountId: string) => {
+      const response = await deleteRequest({
+        url: `${process.env.SERVER}/api/accounts`,
+        body: {
+          accountId,
+        },
+        expectedStatus: 201,
+        credentials: "include",
+      });
+
+      if (response.success) {
+        console.log(response.data);
+        setAccounts((prev) => [...prev.filter((acc) => acc.id !== accountId)]);
+      }
+    },
+    {
+      prompt: 'Are you sure you want to remove "#INJECT_NAME#"?',
+      confirm: "Yes",
+      cancel: "No",
+      injectText: true,
+    }
+  );
 
   const handleAccountAdd = async () => {
     const response = await postRequest({
@@ -117,13 +159,12 @@ const Accounts = () => {
   return (
     <Container
       grid={{ rows: "auto", cols: 1, gap: "16px" }}
-      styles={{ padding: "10px" }}
+      styles={{ padding: "8px" }}
     >
       {confirmPrompt}
-      <Heading.h2>Accounts</Heading.h2>
-
-      <button onClick={prompt1}>action 1</button>
-      <button onClick={prompt2}>action 2</button>
+      <Heading.h2 styles={{ justifySelf: "start", padding: "8px" }}>
+        Accounts
+      </Heading.h2>
 
       {accounts.map((account, index) => (
         <Container
@@ -134,9 +175,17 @@ const Accounts = () => {
         >
           <Account account={account} setAccount={handleSocialClick} />
           <Button
-            onClick={() => handleAccountRemove(account.id)}
-            icon={<Icons.RemoveIcon size="large" />}
-            styles={{ padding: "10px 0 16px 12px" }}
+            onClick={() => {}}
+            icon={<Icons.EditIcon size="medium" />}
+            styles={{ paddingTop: "14px" }}
+            noBorder
+          />
+          <Button
+            onClick={() =>
+              handleAccountRemove(account.id).injectText(account.name)
+            }
+            icon={<Icons.RemoveIcon size="medium" />}
+            styles={{ paddingTop: "14px" }}
             noBorder
           />
         </Container>

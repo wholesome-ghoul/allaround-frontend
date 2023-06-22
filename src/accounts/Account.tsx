@@ -19,9 +19,13 @@ const Account = ({ account, setAccount }: AccountProps) => {
       fill
     >
       {account?.socials.map((social, index) => (
-        <Dropdown.Item key={index} styles={{ padding: "5px 0 0 20px" }}>
+        <Dropdown.Item key={index} styles={{ paddingTop: "5px" }}>
           <Button
-            onClick={() => setAccount(account.id)(social.name)}
+            onClick={() =>
+              setAccount(account.id, social.value)
+                .injectText(social.name)
+                .skip(!social.enabled)
+            }
             icon={social.icon}
             variant={social.enabled ? "primary" : "secondary"}
             styles={{ padding: "3px" }}
