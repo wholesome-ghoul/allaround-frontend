@@ -30,7 +30,7 @@ type SignUpUser = {
   password: string;
 };
 
-type PostBody = UnkownData | SignUpUser;
+type PostBody = UnkownData | SignUpUser | FormData;
 type PutBody = PostBody;
 
 type DisplayError = {

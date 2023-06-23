@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Button, Dropdown, Text, Checkbox } from "@allaround/all-components";
+import {
+  Button,
+  Dropdown,
+  Text,
+  Checkbox,
+  Image,
+} from "@allaround/all-components";
 
 import type { AccountProps } from "./types";
 
@@ -11,6 +17,15 @@ const Account = ({ account, setAccount }: AccountProps) => {
       text={account?.name}
       isOpen={isOpen}
       setIsOpen={setIsOpen}
+      icon={
+        <Image
+          src={account?.avatar}
+          width="36px"
+          height="36px"
+          objectFit="contain"
+          inheritBorderColor
+        />
+      }
       paddedItemContainer={false}
       variant="secondary"
       dropperSize="large"

@@ -46,7 +46,8 @@ module.exports = () => {
     }),
     new CopyPlugin({
       patterns: [
-        { from: "public/icons", to: "icons" },
+        { from: "public/assets/icons", to: "icons" },
+        { from: "public/assets/images", to: "images" },
         { from: "public/manifest.webmanifest" },
         { from: "public/service-worker.js" },
         { from: "public/index.js" },

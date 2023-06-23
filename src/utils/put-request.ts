@@ -1,21 +1,36 @@
 import { ServerResponse, PutBody } from "./types";
 
-const putRequest = async (
-  url: string,
-  body: PutBody,
+type PutRequest = {
+  url: string;
+  body: PutBody;
+  expectedStatus?: number;
+  credentials?: RequestCredentials;
+  formData?: boolean;
+};
+
+const putRequest = async ({
+  url,
+  body,
   expectedStatus = 200,
-  { credentials = "omit" }: { credentials?: RequestCredentials } = {}
-) => {
+  credentials = "omit",
+  formData = false,
+}: PutRequest) => {
   let data: ServerResponse = {};
+
+  const headers: {} = formData
+    ? {}
+    : {
+        "Content-Type": "application/json",
+      };
+
+  const _body = formData ? body : (JSON.stringify(body) as any);
 
   try {
     const response = await fetch(url, {
       method: "put",
       credentials,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
+      headers,
+      body: _body,
     });
 
     const status = response.status;

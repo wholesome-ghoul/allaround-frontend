@@ -4,15 +4,27 @@ import {
   Container,
   Heading,
   Icons,
+  Input,
+  Label,
+  Upload,
+  Image,
   hooks,
 } from "@allaround/all-components";
 
-import { deleteRequest, getRequest, postRequest } from "../utils";
+import {
+  DisplayError,
+  deleteRequest,
+  getRequest,
+  postRequest,
+  putRequest,
+} from "../utils";
 import Account from "./Account";
 import type { AccountType, Social } from "./types";
 import { getAccount, getSocialOauthUrl } from "./utils";
 
-const { useConfirm } = hooks;
+const { useConfirm, useModal } = hooks;
+
+const DEFAULT_ACCOUNT_AVATAR = "/assets/images/account.webp";
 
 const toggleEnabled = (value: string) => (social: Social) => {
   if (social.value === value) {
@@ -47,8 +59,27 @@ const isSocialEnabled = (accountId: string, value: string) => {
   };
 };
 
+type ModalValues = {
+  avatar: string | File | any;
+  name: string;
+  createButton: "Create" | "Update";
+  id: string;
+};
+
 const Accounts = () => {
   const [accounts, setAccounts] = useState<AccountType[]>([]);
+  const { show, close, modal: Modal } = useModal();
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [modalValues, setModalValues] = useState<ModalValues>({
+    avatar: "",
+    name: "",
+    createButton: "Create",
+    id: "",
+  });
+  const [error, setError] = useState<DisplayError>({
+    texts: [],
+    show: false,
+  });
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -126,7 +157,6 @@ const Accounts = () => {
       });
 
       if (response.success) {
-        console.log(response.data);
         setAccounts((prev) => [...prev.filter((acc) => acc.id !== accountId)]);
       }
     },
@@ -138,14 +168,55 @@ const Accounts = () => {
     }
   );
 
-  const handleAccountAdd = async () => {
+  const handleAccountModification = () => {
+    if (modalValues.createButton === "Create") {
+      createAccount();
+    } else {
+      accountUpdate();
+    }
+
+    close();
+  };
+
+  const openAccountAddModal = () => {
+    setModalValues((prev) => ({
+      ...prev,
+      createButton: "Create",
+    }));
+
+    show();
+  };
+
+  const createAvatarUrl = async () => {
+    const formData = new FormData();
+    formData.append("file", avatarFile as File);
+
+    const response = await postRequest({
+      url: `${process.env.SERVER}/aws/s3/upload/avatar`,
+      body: formData,
+      credentials: "include",
+      formData: true,
+    });
+
+    if (response.success) {
+      return response.data.url as string;
+    } else {
+      console.log(response.data.error);
+    }
+
+    return DEFAULT_ACCOUNT_AVATAR;
+  };
+
+  const createAccount = async () => {
+    const avatar = await createAvatarUrl();
+
     const response = await postRequest({
       url: `${process.env.SERVER}/api/accounts`,
       credentials: "include",
       body: {
-        name: "new account",
-        position: "new position",
-        avatar: "new avatar",
+        name: modalValues.name,
+        position: "",
+        avatar,
       },
     });
 
@@ -156,11 +227,147 @@ const Accounts = () => {
     }
   };
 
+  const openAccountEditModal = (account: AccountType) => {
+    setModalValues({
+      avatar: account.avatar,
+      name: account.name,
+      createButton: "Update",
+      id: account.id,
+    });
+
+    show();
+  };
+
+  const accountUpdate = async () => {
+    const updatedAccountValues = modalValues;
+
+    if (avatarFile) {
+      const basename = modalValues.avatar.split("/").pop();
+      const filename = basename?.split("-")[1];
+
+      if (filename !== avatarFile.name) {
+        const avatar = await createAvatarUrl();
+        updatedAccountValues.avatar = avatar;
+      }
+    }
+
+    const response = await putRequest({
+      url: `${process.env.SERVER}/api/accounts`,
+      credentials: "include",
+      body: {
+        ...updatedAccountValues,
+        accountId: updatedAccountValues.id,
+      },
+      expectedStatus: 201,
+    });
+
+    if (response.success) {
+      setAccounts((prev) => [
+        ...prev.map((acc) => {
+          if (acc.id === updatedAccountValues.id) {
+            const updatedAccount = {
+              ...(response.data.account as AccountType),
+              ...updatedAccountValues,
+            };
+            return getAccount(updatedAccount);
+          }
+
+          return acc;
+        }),
+      ]);
+    } else {
+      console.log(response.data.error);
+    }
+  };
+
+  /**
+   * @description closes the modal and resets the values
+   */
+  const handleAccountClose = () => {
+    setModalValues((prev) => ({
+      ...prev,
+      avatar: "",
+      name: "",
+    }));
+
+    setError({
+      texts: [],
+      show: false,
+    });
+
+    setAvatarFile(null);
+
+    close();
+  };
+
   return (
     <Container
       grid={{ rows: "auto", cols: 1, gap: "16px" }}
       styles={{ padding: "8px" }}
     >
+      <Modal>
+        <Container grid={{ cols: 1, rows: "auto", gap: "20px" }} autoHor>
+          {modalValues.avatar || avatarFile ? (
+            <Image
+              src={avatarFile || modalValues.avatar}
+              alt="account avatar"
+              width="256px"
+              height="256px"
+              objectFit="contain"
+              icon={<Icons.EditIcon />}
+              iconPosition="bottom"
+              maxSize={2 * 1024}
+              isError={error.show}
+              handleError={({ text, show }) =>
+                setError({ texts: [text], show })
+              }
+              setFile={setAvatarFile}
+              editable
+            />
+          ) : (
+            <>
+              <Upload
+                text="Upload avatar"
+                accept={["image/png"]}
+                maxSize={2 * 1024}
+                isError={error.show}
+                handleError={({ text, show }) =>
+                  setError({ texts: [text], show })
+                }
+                setFile={setAvatarFile}
+              />
+              {error.show && (
+                <Container noGrid>{error.texts.join("")}</Container>
+              )}
+            </>
+          )}
+
+          <Container styles={{ flexFlow: "column" }} gap="10px" noGrid flex>
+            <Label size="large" styles={{ alignSelf: "flex-start" }}>
+              Name
+            </Label>
+            <Input
+              onChange={(event) =>
+                setModalValues((prev) => ({
+                  ...prev,
+                  name: event.target.value,
+                }))
+              }
+              value={modalValues.name}
+              placeholder="account name"
+              fill
+            />
+          </Container>
+
+          <Container gap="10px" noGrid flex>
+            <Button onClick={handleAccountModification}>
+              {modalValues.createButton}
+            </Button>
+            <Button onClick={handleAccountClose}>Close</Button>
+          </Container>
+        </Container>
+      </Modal>
+
       {confirmPrompt}
       <Heading.h2 styles={{ justifySelf: "start", padding: "8px" }}>
         Accounts
@@ -175,7 +382,7 @@ const Accounts = () => {
         >
           <Account account={account} setAccount={handleSocialClick} />
           <Button
-            onClick={() => {}}
+            onClick={() => openAccountEditModal(account)}
             icon={<Icons.EditIcon size="medium" />}
             styles={{ paddingTop: "14px" }}
             noBorder
@@ -192,7 +399,7 @@ const Accounts = () => {
       ))}
 
       <Button
-        onClick={handleAccountAdd}
+        onClick={openAccountAddModal}
         icon={<Icons.PlusIcon size="large" />}
         styles={{ alignSelf: "center" }}
         noBorder

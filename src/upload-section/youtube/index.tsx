@@ -118,9 +118,9 @@ const YoutubeUpload = () => {
             >
               {!!thumbnail ? (
                 <Image
-                  file={thumbnail}
+                  src={thumbnail}
                   alt="thumbnail"
-                  removeHandler={() => setThumbnail(null)}
+                  clickHandler={() => setThumbnail(null)}
                 />
               ) : (
                 <Upload
