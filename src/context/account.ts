@@ -1,11 +1,6 @@
 import { createContext } from "react";
 
-import type { AccountType } from "../utils";
-
-type AccountContextData = {
-  activeAccount: AccountType | null;
-  setActiveAccount: (account: AccountType | null) => void;
-};
+import type { AccountType, AccountContextData } from "../utils";
 
 const AccountContext = createContext<AccountContextData>({
   activeAccount: null,

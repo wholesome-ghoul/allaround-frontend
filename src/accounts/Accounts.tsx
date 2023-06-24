@@ -1,13 +1,9 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Container,
   Heading,
   Icons,
-  Input,
-  Label,
-  Upload,
-  Image,
   hooks,
   Checkbox,
 } from "@allaround/all-components";
@@ -19,38 +15,37 @@ import {
   postRequest,
   putRequest,
 } from "../utils";
-import Account from "./Account";
 import type { AccountType } from "../utils";
+import Account from "./Account";
 import {
   getAccount,
   getSocialOauthUrl,
   isSocialEnabled,
   updateAccount,
+  createAvatarUrl,
 } from "./utils";
 import Context from "../context";
+import ModalContent, { ModalValues } from "./ModalContent";
 
 const { useConfirm, useModal } = hooks;
 
-const DEFAULT_ACCOUNT_AVATAR = "/assets/images/account.webp";
-
-type ModalValues = {
-  avatar: string | File | any;
-  name: string;
-  createButton: "Create" | "Update";
-  id: string;
+const MODAL_DEFAULTS: ModalValues = {
+  avatar: "",
+  name: "",
+  createButton: "Create",
+  id: "",
 };
 
 const Accounts = () => {
   const { activeAccount, setActiveAccount } = useContext(Context.Account);
-  const [accounts, setAccounts] = useState<AccountType[]>([]);
-  const { show, close, modal: Modal } = useModal();
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [modalValues, setModalValues] = useState<ModalValues>({
-    avatar: "",
-    name: "",
-    createButton: "Create",
-    id: "",
-  });
+  const [modalValues, setModalValues] = useState<ModalValues>(MODAL_DEFAULTS);
+  const setModalDefaults = () => {
+    setModalValues(MODAL_DEFAULTS);
+    setAvatarFile(null);
+  };
+  const [accounts, setAccounts] = useState<AccountType[]>([]);
+  const { show, close, modal: Modal } = useModal({ onEsc: setModalDefaults });
   const [error, setError] = useState<DisplayError>({
     texts: [],
     show: false,
@@ -90,9 +85,7 @@ const Accounts = () => {
           const authUrl = response.data.authorizationUrl as string;
 
           if (authUrl) {
-            window.open(authUrl, "_blank")?.focus();
-            // setActiveAccount(accounts.find((acc) => acc.id === id) ?? null);
-            // TODO: update accounts
+            window.open(authUrl, "_blank");
           }
         } else {
           console.log(response.data.error);
@@ -107,7 +100,14 @@ const Accounts = () => {
 
         if (response.success) {
           setAccounts((prev) => [...prev.map(updateAccount(value)(id))]);
-          // setActiveAccount(accounts.find((acc) => acc.id === id) ?? null);
+
+          if (activeAccount?.id === id) {
+            const updatedAccount = {
+              ...activeAccount,
+              [value]: false,
+            };
+            setActiveAccount(updatedAccount);
+          }
         } else {
           console.log(response.data.error);
         }
@@ -135,6 +135,10 @@ const Accounts = () => {
 
       if (response.success) {
         setAccounts((prev) => [...prev.filter((acc) => acc.id !== accountId)]);
+
+        if (activeAccount?.id === accountId) {
+          setActiveAccount(null);
+        }
       }
     },
     {
@@ -152,7 +156,7 @@ const Accounts = () => {
       accountUpdate();
     }
 
-    close();
+    close(setModalDefaults);
   };
 
   const openAccountAddModal = () => {
@@ -164,28 +168,8 @@ const Accounts = () => {
     show();
   };
 
-  const createAvatarUrl = async () => {
-    const formData = new FormData();
-    formData.append("file", avatarFile as File);
-
-    const response = await postRequest({
-      url: `${process.env.SERVER}/aws/s3/upload/avatar`,
-      body: formData,
-      credentials: "include",
-      formData: true,
-    });
-
-    if (response.success) {
-      return response.data.url as string;
-    } else {
-      console.log(response.data.error);
-    }
-
-    return DEFAULT_ACCOUNT_AVATAR;
-  };
-
   const createAccount = async () => {
-    const avatar = await createAvatarUrl();
+    const avatar = await createAvatarUrl(avatarFile);
 
     const response = await postRequest({
       url: `${process.env.SERVER}/api/accounts`,
@@ -223,7 +207,7 @@ const Accounts = () => {
       const filename = basename?.split("-")[1];
 
       if (filename !== avatarFile.name) {
-        const avatar = await createAvatarUrl();
+        const avatar = await createAvatarUrl(avatarFile);
         updatedAccountValues.avatar = avatar;
       }
     }
@@ -252,6 +236,15 @@ const Accounts = () => {
           return acc;
         }),
       ]);
+
+      if (activeAccount?.id === updatedAccountValues.id) {
+        const updatedActiveAccount: AccountType = {
+          ...activeAccount,
+          name: updatedAccountValues.name,
+          avatar: updatedAccountValues.avatar,
+        };
+        setActiveAccount(updatedActiveAccount);
+      }
     } else {
       console.log(response.data.error);
     }
@@ -261,12 +254,6 @@ const Accounts = () => {
    * @description closes the modal and resets the values
    */
   const handleAccountClose = () => {
-    setModalValues((prev) => ({
-      ...prev,
-      avatar: "",
-      name: "",
-    }));
-
     setError({
       texts: [],
       show: false,
@@ -274,131 +261,85 @@ const Accounts = () => {
 
     setAvatarFile(null);
 
-    close();
+    close(setModalDefaults);
   };
 
-  const textRef = useRef<HTMLDivElement>(null);
+  const handleAccountNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setModalValues((prev) => ({
+      ...prev,
+      name: e.target.value,
+    }));
+  };
+
   return (
     <Container
       grid={{ rows: "auto", cols: 1, gap: "16px" }}
       styles={{ padding: "8px" }}
     >
       <Modal>
-        <Container grid={{ cols: 1, rows: "auto", gap: "20px" }} autoHor>
-          {modalValues.avatar || avatarFile ? (
-            <Image
-              src={avatarFile || modalValues.avatar}
-              alt="account avatar"
-              width="256px"
-              height="256px"
-              objectFit="contain"
-              icon={<Icons.EditIcon />}
-              iconPosition="bottom"
-              maxSize={2 * 1024}
-              isError={error.show}
-              handleError={({ text, show }) =>
-                setError({ texts: [text], show })
-              }
-              setFile={setAvatarFile}
-              editable
-            />
-          ) : (
-            <>
-              <Upload
-                text="Upload avatar"
-                accept={["image/png"]}
-                maxSize={2 * 1024}
-                isError={error.show}
-                handleError={({ text, show }) =>
-                  setError({ texts: [text], show })
-                }
-                setFile={setAvatarFile}
-              />
-              {error.show && (
-                <Container noGrid>{error.texts.join("")}</Container>
-              )}
-            </>
-          )}
-
-          <Container styles={{ flexFlow: "column" }} gap="10px" noGrid flex>
-            <Label size="large" styles={{ alignSelf: "flex-start" }}>
-              Name
-            </Label>
-            <Input
-              onChange={(event) =>
-                setModalValues((prev) => ({
-                  ...prev,
-                  name: event.target.value,
-                }))
-              }
-              value={modalValues.name}
-              placeholder="account name"
-              fill
-            />
-          </Container>
-
-          <Container gap="10px" noGrid flex>
-            <Button onClick={handleAccountModification}>
-              {modalValues.createButton}
-            </Button>
-            <Button onClick={handleAccountClose}>Close</Button>
-          </Container>
-        </Container>
+        <ModalContent
+          modalValues={modalValues}
+          handleAccountNameChange={handleAccountNameChange}
+          handleAccountModification={handleAccountModification}
+          handleAccountClose={handleAccountClose}
+          avatarFile={avatarFile}
+          setAvatarFile={setAvatarFile}
+          error={error}
+          setError={setError}
+        />
       </Modal>
 
       {confirmPrompt}
-      <Heading.h2
-        styles={{ justifySelf: "start", padding: "8px" }}
-        innerRef={textRef}
-      >
+      <Heading.h2 styles={{ justifySelf: "start", padding: "8px" }}>
         Accounts
       </Heading.h2>
 
-      {accounts.map((account, index) => (
-        <Container
-          styles={{ alignItems: "flex-start" }}
-          key={index}
-          noGrid
-          flex
-        >
-          <Account account={account} setAccount={handleSocialClick} />
-          <Checkbox
-            onChange={() => setActiveAccount(account)}
-            size="medium"
-            iconPosition="right"
-            styles={{ alignItems: "flex-start", marginTop: "16px" }}
-            checked={activeAccount?.id === account.id}
-            tooltip={{
-              children: "set as active account",
-              preferredPosition: "left",
-            }}
-            shape="round"
-            color="blue"
-          />
-          <Button
-            onClick={() => openAccountEditModal(account)}
-            icon={<Icons.EditIcon size="medium" />}
-            styles={{ marginTop: "13px" }}
-            tooltip={{
-              children: "edit account",
-              preferredPosition: "left",
-            }}
-            noBorder
-          />
-          <Button
-            onClick={() =>
-              handleAccountRemove(account.id).injectText(account.name)
-            }
-            icon={<Icons.RemoveIcon size="medium" />}
-            styles={{ marginTop: "13px" }}
-            tooltip={{
-              children: "remove account",
-              preferredPosition: "left",
-            }}
-            noBorder
-          />
-        </Container>
-      ))}
+      {accounts &&
+        accounts.map((account, index) => (
+          <Container
+            styles={{ alignItems: "flex-start" }}
+            key={index}
+            noGrid
+            flex
+          >
+            <Account account={account} setAccount={handleSocialClick} />
+            <Checkbox
+              onChange={() => setActiveAccount(account)}
+              size="medium"
+              iconPosition="right"
+              styles={{ alignItems: "flex-start", marginTop: "16px" }}
+              checked={activeAccount?.id === account.id}
+              tooltip={{
+                children: "set as active account",
+                preferredPosition: "left",
+              }}
+              shape="round"
+              color="blue"
+            />
+            <Button
+              onClick={() => openAccountEditModal(account)}
+              icon={<Icons.EditIcon size="medium" />}
+              styles={{ marginTop: "13px" }}
+              tooltip={{
+                children: "edit account",
+                preferredPosition: "left",
+              }}
+              noBorder
+            />
+            <Button
+              onClick={() =>
+                handleAccountRemove(account.id).injectText(account.name)
+              }
+              icon={<Icons.RemoveIcon size="medium" />}
+              styles={{ marginTop: "13px" }}
+              tooltip={{
+                children: "remove account",
+                preferredPosition: "left",
+              }}
+              noBorder
+            />
+          </Container>
+        ))}
 
       <Button
         onClick={openAccountAddModal}
@@ -406,7 +347,7 @@ const Accounts = () => {
         styles={{ alignSelf: "center" }}
         tooltip={{
           children: "add account",
-          preferredPosition: "left",
+          preferredPosition: "top",
         }}
         noBorder
       />

@@ -35,11 +35,14 @@ const Bar = ({ contentRef }: Props) => {
   const navbarRef = useRef<HTMLDivElement>(null);
   const dropdownItemsRef = useRef<HTMLDivElement>(null);
   const { activeAccount } = useContext(Context.Account);
+  const documentRef = useRef<Document>(document);
   const navigate = useNavigate();
 
   useResizeObserver(document.body, (_entries: any) => {
     if (window.innerWidth < theme.bp.nums.md2) {
       setIsNavbar(true);
+
+      setIsDropdownOpen(false);
     } else {
       setIsNavbar(false);
       setIsSidebarOpen(false);
@@ -47,18 +50,22 @@ const Bar = ({ contentRef }: Props) => {
   });
 
   useEventListener(
-    "mousedown",
+    "keydown",
     (event: any) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+      if (isSidebarOpen && event.key === "Escape") {
         setIsSidebarOpen(false);
       }
     },
-    document
+    documentRef
   );
 
   useEventListener(
     "mousedown",
     (event: any) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+
       if (
         dropdownItemsRef.current &&
         !dropdownItemsRef.current.contains(event.target)
@@ -66,7 +73,7 @@ const Bar = ({ contentRef }: Props) => {
         setIsDropdownOpen(false);
       }
     },
-    document
+    documentRef
   );
 
   useEffect(() => {
@@ -168,20 +175,21 @@ const Bar = ({ contentRef }: Props) => {
                 noDropperBorder
                 fill
               >
-                {activeAccount?.socials
-                  .filter((social) => social.enabled)
-                  .map((social) => (
-                    <Button
-                      onClick={handleActivePage(routes.create.youtubePost)}
-                      transparent={activePage !== routes.create.youtubePost}
-                      icon={SocialAccountMap[social.icon]}
-                      key={social.value}
-                      noBorder
-                      fill
-                    >
-                      <Text size="small">{social.name}</Text>
-                    </Button>
-                  ))}
+                {activeAccount?.socials &&
+                  activeAccount?.socials
+                    .filter((social) => social.enabled)
+                    .map((social) => (
+                      <Button
+                        onClick={handleActivePage(routes.create.youtubePost)}
+                        transparent={activePage !== routes.create.youtubePost}
+                        icon={SocialAccountMap[social.icon]}
+                        key={social.value}
+                        noBorder
+                        fill
+                      >
+                        <Text size="small">{social.name}</Text>
+                      </Button>
+                    ))}
               </Dropdown>
             </Sidebar>
           </Container>
@@ -205,15 +213,21 @@ const Bar = ({ contentRef }: Props) => {
             fill
             noDropperBorder
           >
-            <Button
-              onClick={handleActivePage(routes.create.youtubePost)}
-              icon={<Icons.CreateIcon size="small" />}
-              transparent={activePage !== routes.create.youtubePost}
-              noBorder
-              fill
-            >
-              <Text size="small">Youtube</Text>
-            </Button>
+            {activeAccount?.socials &&
+              activeAccount?.socials
+                .filter((social) => social.enabled)
+                .map((social) => (
+                  <Button
+                    onClick={handleActivePage(routes.create.youtubePost)}
+                    icon={SocialAccountMap[social.icon]}
+                    transparent={activePage !== routes.create.youtubePost}
+                    key={social.value}
+                    noBorder
+                    fill
+                  >
+                    <Text size="small">{social.name}</Text>
+                  </Button>
+                ))}
           </Dropdown>
         </Sidebar>
       )}

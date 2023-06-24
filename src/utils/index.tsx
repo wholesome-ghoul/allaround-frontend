@@ -1,8 +1,8 @@
 import { Icons } from "@allaround/all-components";
 
 export const SocialAccountMap: { [key: string]: JSX.Element } = {
-  youtube: <Icons.YoutubeIcon size="small" />,
-  tiktok: <Icons.TiktokIcon size="small" />,
+  youtube: <Icons.YoutubeIcon size="small" fill="red"/>,
+  tiktok: <Icons.TiktokIcon size="small" fill="black" />,
 };
 
 export const SocialOauthMap: { [key: string]: string } = {

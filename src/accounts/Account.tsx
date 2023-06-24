@@ -50,10 +50,6 @@ const Account = ({ account, setAccount }: AccountProps) => {
             icon={SocialAccountMap[social.icon]}
             variant={social.enabled ? "primary" : "secondary"}
             styles={{ padding: "3px" }}
-            tooltip={{
-              children: "Enable or disable this social",
-              preferredPosition: "top",
-            }}
             fill
           >
             <Text size="small">{social.name}</Text>

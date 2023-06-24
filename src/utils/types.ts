@@ -64,6 +64,11 @@ type AccountType = {
   id: string;
 };
 
+type AccountContextData = {
+  activeAccount: AccountType | null;
+  setActiveAccount: (account: AccountType | null) => void;
+};
+
 export type {
   ServerResponse,
   ServerError,
@@ -76,4 +81,5 @@ export type {
   PutBody,
   Social,
   AccountType,
+  AccountContextData,
 };

@@ -1,5 +1,7 @@
 import type { Social, AccountType } from "../utils";
-import { SocialOauthMap } from "../utils";
+import { SocialOauthMap, postRequest } from "../utils";
+
+const DEFAULT_ACCOUNT_AVATAR = "/assets/images/account.webp";
 
 const capitalize = (str: string | undefined) => {
   return str && str.charAt(0).toUpperCase() + str.slice(1);
@@ -82,10 +84,33 @@ const isSocialEnabled = (accountId: string, value: string) => {
   };
 };
 
+const createAvatarUrl = async (avatarFile: File | null) => {
+  if (!avatarFile) return DEFAULT_ACCOUNT_AVATAR;
+
+  const formData = new FormData();
+  formData.append("file", avatarFile);
+
+  const response = await postRequest({
+    url: `${process.env.SERVER}/aws/s3/upload/avatar`,
+    body: formData,
+    credentials: "include",
+    formData: true,
+  });
+
+  if (response.success) {
+    return response.data.url as string;
+  } else {
+    console.log(response.data.error);
+  }
+
+  return DEFAULT_ACCOUNT_AVATAR;
+};
+
 export {
   getSocials,
   getAccount,
   getSocialOauthUrl,
   updateAccount,
   isSocialEnabled,
+  createAvatarUrl,
 };

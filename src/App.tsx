@@ -43,9 +43,7 @@ const App = () => {
           path={routes.home}
           element={
             !isSignedIn ? (
-              <HomeBar>
-                <AllAround />
-              </HomeBar>
+              <AllAround />
             ) : (
               <GuardedRoute isSignedIn={isSignedIn}>
                 <HomeBar>
