@@ -1,3 +1,14 @@
+import { Icons } from "@allaround/all-components";
+
+export const SocialAccountMap: { [key: string]: JSX.Element } = {
+  youtube: <Icons.YoutubeIcon size="small" />,
+  tiktok: <Icons.TiktokIcon size="small" />,
+};
+
+export const SocialOauthMap: { [key: string]: string } = {
+  youtube: `${process.env.SERVER}/api/oauth/google`,
+};
+
 export { default as postRequest } from "./post-request";
 export { default as putRequest } from "./put-request";
 export { default as getRequest } from "./get-request";

@@ -1,17 +1,8 @@
-import type { Social } from "./types";
-import { Icons } from "@allaround/all-components";
+import type { Social, AccountType } from "../utils";
+import { SocialOauthMap } from "../utils";
 
 const capitalize = (str: string | undefined) => {
   return str && str.charAt(0).toUpperCase() + str.slice(1);
-};
-
-const SocialAccountMap: { [key: string]: JSX.Element } = {
-  youtube: <Icons.YoutubeIcon size="small" />,
-  tiktok: <Icons.TiktokIcon size="small" />,
-};
-
-const SocialOauthMap: { [key: string]: string } = {
-  youtube: `${process.env.SERVER}/api/oauth/google`,
 };
 
 const getSocials = (acc: any) => {
@@ -26,7 +17,7 @@ const getSocials = (acc: any) => {
       const [serviceName]: any = Object.keys(actualService);
 
       const enabled = actualService[serviceName].schema?.isActive;
-      const icon = SocialAccountMap[serviceName];
+      const icon = serviceName;
       const value = serviceName;
       const name = capitalize(value)!;
 
@@ -58,4 +49,43 @@ const getSocialOauthUrl = (social: string) => {
   return SocialOauthMap[social];
 };
 
-export { getSocials, getAccount, getSocialOauthUrl };
+const toggleEnabled = (value: string) => (social: Social) => {
+  if (social.value === value) {
+    return {
+      ...social,
+      enabled: !social.enabled,
+    };
+  }
+
+  return social;
+};
+
+const updateAccount =
+  (value: string) => (id: string) => (account: AccountType) => {
+    if (account.id === id) {
+      return {
+        ...account,
+        socials: account.socials.map(toggleEnabled(value)),
+      };
+    }
+
+    return account;
+  };
+
+const isSocialEnabled = (accountId: string, value: string) => {
+  return (account: AccountType) => {
+    if (account.id === accountId) {
+      return account.socials.find((social) => social.value === value)?.enabled;
+    }
+
+    return false;
+  };
+};
+
+export {
+  getSocials,
+  getAccount,
+  getSocialOauthUrl,
+  updateAccount,
+  isSocialEnabled,
+};

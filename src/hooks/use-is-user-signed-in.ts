@@ -1,7 +1,9 @@
 import React from "react";
+import { hooks } from "@allaround/all-components";
+
+const { useLocalStorage } = hooks;
 
 import { postRequest } from "../utils";
-import useLocalStorage from "./use-local-storage";
 
 const useIsUserSignedIn = (defaultValue: boolean = false) => {
   const [isSignedIn, setIsSignedIn] = useLocalStorage(

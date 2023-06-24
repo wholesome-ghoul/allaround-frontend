@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import {
   Button,
   Container,
@@ -9,6 +9,7 @@ import {
   Upload,
   Image,
   hooks,
+  Checkbox,
 } from "@allaround/all-components";
 
 import {
@@ -19,45 +20,18 @@ import {
   putRequest,
 } from "../utils";
 import Account from "./Account";
-import type { AccountType, Social } from "./types";
-import { getAccount, getSocialOauthUrl } from "./utils";
+import type { AccountType } from "../utils";
+import {
+  getAccount,
+  getSocialOauthUrl,
+  isSocialEnabled,
+  updateAccount,
+} from "./utils";
+import Context from "../context";
 
 const { useConfirm, useModal } = hooks;
 
 const DEFAULT_ACCOUNT_AVATAR = "/assets/images/account.webp";
-
-const toggleEnabled = (value: string) => (social: Social) => {
-  if (social.value === value) {
-    return {
-      ...social,
-      enabled: !social.enabled,
-    };
-  }
-
-  return social;
-};
-
-const updateAccount =
-  (value: string) => (id: string) => (account: AccountType) => {
-    if (account.id === id) {
-      return {
-        ...account,
-        socials: account.socials.map(toggleEnabled(value)),
-      };
-    }
-
-    return account;
-  };
-
-const isSocialEnabled = (accountId: string, value: string) => {
-  return (account: AccountType) => {
-    if (account.id === accountId) {
-      return account.socials.find((social) => social.value === value)?.enabled;
-    }
-
-    return false;
-  };
-};
 
 type ModalValues = {
   avatar: string | File | any;
@@ -67,6 +41,7 @@ type ModalValues = {
 };
 
 const Accounts = () => {
+  const { activeAccount, setActiveAccount } = useContext(Context.Account);
   const [accounts, setAccounts] = useState<AccountType[]>([]);
   const { show, close, modal: Modal } = useModal();
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -116,6 +91,7 @@ const Accounts = () => {
 
           if (authUrl) {
             window.open(authUrl, "_blank")?.focus();
+            // setActiveAccount(accounts.find((acc) => acc.id === id) ?? null);
             // TODO: update accounts
           }
         } else {
@@ -131,6 +107,7 @@ const Accounts = () => {
 
         if (response.success) {
           setAccounts((prev) => [...prev.map(updateAccount(value)(id))]);
+          // setActiveAccount(accounts.find((acc) => acc.id === id) ?? null);
         } else {
           console.log(response.data.error);
         }
@@ -300,6 +277,7 @@ const Accounts = () => {
     close();
   };
 
+  const textRef = useRef<HTMLDivElement>(null);
   return (
     <Container
       grid={{ rows: "auto", cols: 1, gap: "16px" }}
@@ -369,7 +347,10 @@ const Accounts = () => {
       </Modal>
 
       {confirmPrompt}
-      <Heading.h2 styles={{ justifySelf: "start", padding: "8px" }}>
+      <Heading.h2
+        styles={{ justifySelf: "start", padding: "8px" }}
+        innerRef={textRef}
+      >
         Accounts
       </Heading.h2>
 
@@ -381,10 +362,27 @@ const Accounts = () => {
           flex
         >
           <Account account={account} setAccount={handleSocialClick} />
+          <Checkbox
+            onChange={() => setActiveAccount(account)}
+            size="medium"
+            iconPosition="right"
+            styles={{ alignItems: "flex-start", marginTop: "16px" }}
+            checked={activeAccount?.id === account.id}
+            tooltip={{
+              children: "set as active account",
+              preferredPosition: "left",
+            }}
+            shape="round"
+            color="blue"
+          />
           <Button
             onClick={() => openAccountEditModal(account)}
             icon={<Icons.EditIcon size="medium" />}
-            styles={{ paddingTop: "14px" }}
+            styles={{ marginTop: "13px" }}
+            tooltip={{
+              children: "edit account",
+              preferredPosition: "left",
+            }}
             noBorder
           />
           <Button
@@ -392,7 +390,11 @@ const Accounts = () => {
               handleAccountRemove(account.id).injectText(account.name)
             }
             icon={<Icons.RemoveIcon size="medium" />}
-            styles={{ paddingTop: "14px" }}
+            styles={{ marginTop: "13px" }}
+            tooltip={{
+              children: "remove account",
+              preferredPosition: "left",
+            }}
             noBorder
           />
         </Container>
@@ -402,6 +404,10 @@ const Accounts = () => {
         onClick={openAccountAddModal}
         icon={<Icons.PlusIcon size="large" />}
         styles={{ alignSelf: "center" }}
+        tooltip={{
+          children: "add account",
+          preferredPosition: "left",
+        }}
         noBorder
       />
     </Container>

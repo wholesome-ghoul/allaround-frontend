@@ -7,11 +7,13 @@ import {
   Text,
   Container,
   Dropdown,
+  Image,
   hooks,
 } from "@allaround/all-components";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
-import { theme, routes } from "../utils";
+import { theme, routes, SocialAccountMap } from "../utils";
+import Context from "../context";
 
 const { useResizeObserver, useEventListener } = hooks;
 
@@ -32,6 +34,7 @@ const Bar = ({ contentRef }: Props) => {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const navbarRef = useRef<HTMLDivElement>(null);
   const dropdownItemsRef = useRef<HTMLDivElement>(null);
+  const { activeAccount } = useContext(Context.Account);
   const navigate = useNavigate();
 
   useResizeObserver(document.body, (_entries: any) => {
@@ -113,9 +116,19 @@ const Bar = ({ contentRef }: Props) => {
             />
             <Button
               onClick={() => {}}
-              icon={<Icons.DefaultAvatarIcon size="large" />}
+              icon={
+                activeAccount?.avatar ? (
+                  <Image
+                    src={activeAccount.avatar}
+                    width="36px"
+                    height="36px"
+                    objectFit="contain"
+                  />
+                ) : (
+                  <Icons.DefaultAvatarIcon size="large" />
+                )
+              }
               gridPosition={{ colPos: "12/13" }}
-              noBorder
               transparent
             />
           </Navbar>
@@ -155,24 +168,20 @@ const Bar = ({ contentRef }: Props) => {
                 noDropperBorder
                 fill
               >
-                <Button
-                  onClick={handleActivePage(routes.create.youtubePost)}
-                  icon={<Icons.CreateIcon size="small" />}
-                  transparent={activePage !== routes.create.youtubePost}
-                  noBorder
-                  fill
-                >
-                  <Text size="small">Youtube</Text>
-                </Button>
-                <Button
-                  onClick={handleActivePage(routes.create.youtubePost)}
-                  icon={<Icons.CreateIcon size="small" />}
-                  transparent={activePage !== routes.create.youtubePost}
-                  noBorder
-                  fill
-                >
-                  <Text size="small">Tiktok</Text>
-                </Button>
+                {activeAccount?.socials
+                  .filter((social) => social.enabled)
+                  .map((social) => (
+                    <Button
+                      onClick={handleActivePage(routes.create.youtubePost)}
+                      transparent={activePage !== routes.create.youtubePost}
+                      icon={SocialAccountMap[social.icon]}
+                      key={social.value}
+                      noBorder
+                      fill
+                    >
+                      <Text size="small">{social.name}</Text>
+                    </Button>
+                  ))}
               </Dropdown>
             </Sidebar>
           </Container>

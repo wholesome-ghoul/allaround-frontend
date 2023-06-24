@@ -7,7 +7,12 @@ import {
   Image,
 } from "@allaround/all-components";
 
-import type { AccountProps } from "./types";
+import { SocialAccountMap, type AccountType } from "../utils";
+
+type AccountProps = {
+  account: AccountType;
+  setAccount: (accountId: string, name: string) => any;
+};
 
 const Account = ({ account, setAccount }: AccountProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,6 +31,7 @@ const Account = ({ account, setAccount }: AccountProps) => {
           inheritBorderColor
         />
       }
+      styles={{ minWidth: "240px" }}
       paddedItemContainer={false}
       variant="secondary"
       dropperSize="large"
@@ -41,9 +47,13 @@ const Account = ({ account, setAccount }: AccountProps) => {
                 .injectText(social.name)
                 .skip(!social.enabled)
             }
-            icon={social.icon}
+            icon={SocialAccountMap[social.icon]}
             variant={social.enabled ? "primary" : "secondary"}
             styles={{ padding: "3px" }}
+            tooltip={{
+              children: "Enable or disable this social",
+              preferredPosition: "top",
+            }}
             fill
           >
             <Text size="small">{social.name}</Text>
@@ -54,6 +64,7 @@ const Account = ({ account, setAccount }: AccountProps) => {
               styles={{ justifyContent: "flex-end" }}
               checked={social.enabled}
               text="Enabled"
+              fill
             />
           </Button>
         </Dropdown.Item>

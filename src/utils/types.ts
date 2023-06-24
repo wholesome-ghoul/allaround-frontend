@@ -47,6 +47,23 @@ type Credentials_ActionType =
   | { type: "set_email_error"; emailError: DisplayError }
   | { type: "set_error"; error: DisplayError };
 
+type Social = {
+  name: string;
+  enabled: boolean;
+  value: string;
+  icon: string;
+};
+
+type AccountType = {
+  name: string;
+  socials: Social[];
+  avatar: string;
+  users: string[];
+  admin: string;
+  permissions: string[];
+  id: string;
+};
+
 export type {
   ServerResponse,
   ServerError,
@@ -57,4 +74,6 @@ export type {
   DisplayError,
   Credentials_ActionType,
   PutBody,
+  Social,
+  AccountType,
 };
