@@ -38,6 +38,8 @@ const Account = ({ account, setAccount }: AccountProps) => {
       marginedItem
       enableArrow
       fill
+      oneline
+      ellipsis
     >
       {account?.socials.map((social, index) => (
         <Dropdown.Item key={index} styles={{ paddingTop: "5px" }}>

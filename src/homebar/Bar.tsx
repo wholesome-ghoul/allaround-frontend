@@ -52,8 +52,14 @@ const Bar = ({ contentRef }: Props) => {
   useEventListener(
     "keydown",
     (event: any) => {
-      if (isSidebarOpen && event.key === "Escape") {
-        setIsSidebarOpen(false);
+      if (event.key === "Escape") {
+        if (isSidebarOpen) {
+          setIsSidebarOpen(false);
+        }
+
+        if (isDropdownOpen) {
+          setIsDropdownOpen(false);
+        }
       }
     },
     documentRef

@@ -175,7 +175,7 @@ const Accounts = () => {
       url: `${process.env.SERVER}/api/accounts`,
       credentials: "include",
       body: {
-        name: modalValues.name,
+        name: modalValues.name || "my account",
         position: "",
         avatar,
       },
