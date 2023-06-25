@@ -94,15 +94,15 @@ const NewPasswordForm = () => {
     const resetToken = searchParams.get("resetToken");
     const id = searchParams.get("id");
 
-    const tryPasswordReset = await putRequest(
-      `${process.env.SERVER}/api/users/reset-password`,
-      {
+    const tryPasswordReset = await putRequest({
+      url: `${process.env.SERVER}/api/users/reset-password`,
+      body: {
         password,
         resetToken,
         id,
       },
-      201
-    );
+      expectedStatus: 201,
+    });
 
     if (!tryPasswordReset.success) {
       setGeneralError("Oops, something went wrong");

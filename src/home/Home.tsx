@@ -1,10 +1,9 @@
-import ZoomFocus from "../playground/ZoomFocus";
+import Accounts from "../accounts";
 
 const Home = () => {
   return (
     <>
-      <h1>welcome user</h1>
-      <ZoomFocus />
+      <Accounts />
     </>
   );
 };

@@ -125,15 +125,15 @@ const SignUp = () => {
       return;
     }
 
-    const trySignUp = await postRequest(
-      `${process.env.SERVER}/api/users/sign-up`,
-      {
+    const trySignUp = await postRequest({
+      url: `${process.env.SERVER}/api/users/sign-up`,
+      body: {
         email: state.email,
         username: state.username,
         password: state.password,
       },
-      201
-    );
+      expectedStatus: 201,
+    });
 
     let show = false;
     let text = "";
@@ -143,12 +143,12 @@ const SignUp = () => {
       show = true;
     } else {
       const id = trySignUp.data.id;
-      const confirmEmail = await postRequest(
-        `${process.env.SERVER}/api/users/confirm-email`,
-        {
+      const confirmEmail = await postRequest({
+        url: `${process.env.SERVER}/api/users/confirm-email`,
+        body: {
           id,
-        }
-      );
+        },
+      });
 
       if (confirmEmail.success) {
         navigate("/sign-in");

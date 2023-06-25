@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import AllAround from "./allaround";
@@ -5,9 +6,10 @@ import Home from "./home";
 import HomeBar from "./homebar";
 import SignUp from "./sign-up";
 import SignIn from "./sign-in";
+import YoutubeUpload from "./upload-section/youtube";
 import ResetPassword from "./reset-password";
 import { useIsUserSignedIn } from "./hooks";
-import React from "react";
+import { routes } from "./utils";
 
 type GuardedRouteProps = {
   children: React.ReactNode;
@@ -21,14 +23,14 @@ const GuardedRoute = ({
   pass = false,
 }: GuardedRouteProps) => {
   if (isSignedIn && pass) {
-    return <Navigate to="/" />;
+    return <Navigate to={routes.home} />;
   }
 
   if (isSignedIn || pass) {
     return children;
   }
 
-  return <Navigate to="/sign-in" />;
+  return <Navigate to={routes.signIn} />;
 };
 
 const App = () => {
@@ -38,12 +40,10 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route
-          path="/"
+          path={routes.home}
           element={
             !isSignedIn ? (
-              <HomeBar>
-                <AllAround />
-              </HomeBar>
+              <AllAround />
             ) : (
               <GuardedRoute isSignedIn={isSignedIn}>
                 <HomeBar>
@@ -55,34 +55,39 @@ const App = () => {
         />
 
         <Route
-          path="/sign-up"
+          path={routes.create.youtubePost}
           element={
-            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
+            <GuardedRoute isSignedIn={isSignedIn}>
               <HomeBar>
-                <SignUp />
+                <YoutubeUpload />
               </HomeBar>
             </GuardedRoute>
           }
         />
 
         <Route
-          path="/sign-in"
+          path={routes.signUp}
           element={
             <GuardedRoute pass={true} isSignedIn={isSignedIn}>
-              <HomeBar>
-                <SignIn setIsSignedIn={setIsSignedIn} />
-              </HomeBar>
+              <SignUp />
             </GuardedRoute>
           }
         />
 
         <Route
-          path="/reset-password"
+          path={routes.signIn}
           element={
             <GuardedRoute pass={true} isSignedIn={isSignedIn}>
-              <HomeBar>
-                <ResetPassword />
-              </HomeBar>
+              <SignIn setIsSignedIn={setIsSignedIn} />
+            </GuardedRoute>
+          }
+        />
+
+        <Route
+          path={routes.resetPassword}
+          element={
+            <GuardedRoute pass={true} isSignedIn={isSignedIn}>
+              <ResetPassword />
             </GuardedRoute>
           }
         />

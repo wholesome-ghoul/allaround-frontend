@@ -49,16 +49,16 @@ const SignIn = ({ setIsSignedIn }: Props) => {
       username = emailOrUsername;
     }
 
-    const trySignIn = await postRequest(
-      `${process.env.SERVER}/api/users/sign-in`,
-      {
+    const trySignIn = await postRequest({
+      url: `${process.env.SERVER}/api/users/sign-in`,
+      body: {
         email,
         username,
         password,
       },
-      200,
-      { credentials: "include" }
-    );
+      expectedStatus: 200,
+      credentials: "include",
+    });
 
     if (!trySignIn.success) {
       const text = trySignIn.data.error ?? "Oops, something went wrong";
