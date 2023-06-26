@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Container,
   Textarea,
@@ -10,12 +10,12 @@ import {
   Image,
   Label,
   Button,
-  hooks,
 } from "@allaround/all-components";
 
-import { DisplayError, theme } from "../../utils";
+import { theme } from "../../utils";
 
-const { useEventListener } = hooks;
+// const VIDEO_MAX_DURATION_SECONDS = 1 * 30;
+// const VIDEO_MAX_DURATION_MINUTES = 0
 
 const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
@@ -26,11 +26,18 @@ const YoutubeUpload = () => {
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
   const [date, setDate] = useState<Date | null>(null);
-  const [isError, setIsError] = useState(false);
-  const [error, setError] = useState<DisplayError>({
-    texts: [],
-    show: false,
+  const [errors, setErrors] = useState({
+    title: false,
+    description: false,
+    tags: false,
+    thumbnail: false,
+    video: false,
+    date: false,
   });
+
+  useEffect(() => {
+    console.log(errors);
+  }, [errors]);
 
   const handleTagsChange = (values: string[]) => {
     setTags(values);
@@ -64,8 +71,8 @@ const YoutubeUpload = () => {
           {!!video ? (
             <Video
               file={video}
-              maxDuration={60 * 30}
-              setIsError={setIsError}
+              maxDuration={1 * 30}
+              setIsError={(value) => setErrors({ ...errors, video: value })}
               handleRemove={() => setVideo(null)}
             />
           ) : (
@@ -73,7 +80,7 @@ const YoutubeUpload = () => {
               text="Click or Drag a video to upload"
               accept={["video/mp4"]}
               maxSize={51 * 1024}
-              setIsError={setIsError}
+              setIsError={(value) => setErrors({ ...errors, video: value })}
               setFile={setVideo}
             />
           )}
@@ -85,6 +92,8 @@ const YoutubeUpload = () => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           label="Title (required)"
+          isError={errors.title}
+          setIsError={(value) => setErrors({ ...errors, title: value })}
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 2 },
             { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "1/3" },
@@ -98,6 +107,8 @@ const YoutubeUpload = () => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           label="Description"
+          isError={errors.description}
+          setIsError={(value) => setErrors({ ...errors, description: value })}
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 3 },
             { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "3/6" },
@@ -108,6 +119,8 @@ const YoutubeUpload = () => {
           max={500}
           onChange={handleTagsChange}
           label="Tags"
+          isError={errors.tags}
+          setIsError={(value) => setErrors({ ...errors, tags: value })}
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 4 },
             { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "6/7" },
@@ -127,13 +140,14 @@ const YoutubeUpload = () => {
               src={thumbnail}
               alt="thumbnail"
               clickHandler={() => setThumbnail(null)}
+              variant="youtube-thumbnail"
             />
           ) : (
             <Upload
               text="Upload thumbnail"
-              accept={["image/png"]}
+              accept={["image/png", "image/jpg", "image/jpeg"]}
               maxSize={2 * 1024}
-              setIsError={setIsError}
+              setIsError={(value) => setErrors({ ...errors, thumbnail: value })}
               setFile={setThumbnail}
             />
           )}
