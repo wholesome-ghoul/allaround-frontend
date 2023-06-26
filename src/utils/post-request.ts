@@ -34,6 +34,11 @@ const postRequest = async ({
     });
 
     const status = response.status;
+
+    if (status === 304) {
+      return { data, status, message: "not modified" };
+    }
+
     data = await response.json();
 
     return { data, status, success: status === expectedStatus };

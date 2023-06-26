@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Container,
   Textarea,
@@ -10,12 +10,22 @@ import {
   Image,
   Label,
   Button,
+  hooks,
 } from "@allaround/all-components";
 
-import { theme } from "../../utils";
+import { postRequest, theme } from "../../utils";
+import Context from "../../context";
 
-// const VIDEO_MAX_DURATION_SECONDS = 1 * 30;
-// const VIDEO_MAX_DURATION_MINUTES = 0
+const { useIndexedDb } = hooks;
+
+type Category = {
+  id: string;
+  snippet: {
+    title: string;
+  };
+};
+
+const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
 
 const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
@@ -26,18 +36,51 @@ const YoutubeUpload = () => {
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
   const [date, setDate] = useState<Date | null>(null);
+  const { activeAccount } = useContext(Context.Account);
+  const { setDbValues: setVideoCategories, dbValues: videoCategories } =
+    useIndexedDb({
+      name: "youtubeVideoCategories",
+      version: 1,
+      store: { name: "value", keyPath: "value" },
+    });
   const [errors, setErrors] = useState({
     title: false,
     description: false,
     tags: false,
     thumbnail: false,
     video: false,
-    date: false,
   });
 
   useEffect(() => {
-    console.log(errors);
-  }, [errors]);
+    const fetchVideoCategories = async () => {
+      const url = `${process.env.SERVER}/api/service/google/youtube/video-categories`;
+      const body = { accountId: activeAccount?.id };
+
+      const response = await postRequest({
+        url,
+        body,
+        credentials: "include",
+      });
+
+      if (response.status === 304) return;
+
+      if (response.success) {
+        const data = response.data.categories as Category[];
+        const categories = data.map((category) => {
+          return {
+            value: category.id,
+            label: category.snippet.title,
+          };
+        });
+
+        setVideoCategories(categories);
+      } else {
+        console.error(response.data.error);
+      }
+    };
+
+    fetchVideoCategories();
+  }, []);
 
   const handleTagsChange = (values: string[]) => {
     setTags(values);
@@ -71,15 +114,14 @@ const YoutubeUpload = () => {
           {!!video ? (
             <Video
               file={video}
-              maxDuration={1 * 30}
+              maxDuration={VIDEO_MAX_DURATION_SECONDS}
               setIsError={(value) => setErrors({ ...errors, video: value })}
-              handleRemove={() => setVideo(null)}
+              clickHandler={() => setVideo(null)}
             />
           ) : (
             <Upload
               text="Click or Drag a video to upload"
               accept={["video/mp4"]}
-              maxSize={51 * 1024}
               setIsError={(value) => setErrors({ ...errors, video: value })}
               setFile={setVideo}
             />
@@ -171,10 +213,7 @@ const YoutubeUpload = () => {
             <Select
               selectedIndex={category}
               setSelectedIndex={setCategory}
-              options={[
-                { label: "Film & Animation", value: 1 },
-                { label: "Autos & Vehicles", value: 2 },
-              ]}
+              options={videoCategories}
               fill
             />
           </Container>
