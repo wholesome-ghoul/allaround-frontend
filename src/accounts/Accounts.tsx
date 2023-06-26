@@ -8,13 +8,7 @@ import {
   Checkbox,
 } from "@allaround/all-components";
 
-import {
-  DisplayError,
-  deleteRequest,
-  getRequest,
-  postRequest,
-  putRequest,
-} from "../utils";
+import { deleteRequest, getRequest, postRequest, putRequest } from "../utils";
 import type { AccountType } from "../utils";
 import Account from "./Account";
 import {
@@ -23,6 +17,7 @@ import {
   isSocialEnabled,
   updateAccount,
   createAvatarUrl,
+  Errors,
 } from "./utils";
 import Context from "../context";
 import ModalContent, { ModalValues } from "./ModalContent";
@@ -41,15 +36,15 @@ const Accounts = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [modalValues, setModalValues] = useState<ModalValues>(MODAL_DEFAULTS);
   const setModalDefaults = () => {
+    setErrors(Errors);
+    setIsError(false);
     setModalValues(MODAL_DEFAULTS);
     setAvatarFile(null);
   };
   const [accounts, setAccounts] = useState<AccountType[]>([]);
   const { show, close, modal: Modal } = useModal({ onEsc: setModalDefaults });
-  const [error, setError] = useState<DisplayError>({
-    texts: [],
-    show: false,
-  });
+  const [isError, setIsError] = useState(false);
+  const [errors, setErrors] = useState<typeof Errors>(Errors);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -149,14 +144,15 @@ const Accounts = () => {
     }
   );
 
-  const handleAccountModification = () => {
+  const handleAccountModification = async () => {
+    let success = false;
     if (modalValues.createButton === "Create") {
-      createAccount();
+      success = await createAccount();
     } else {
-      accountUpdate();
+      success = await accountUpdate();
     }
 
-    close(setModalDefaults);
+    success && close(setModalDefaults);
   };
 
   const openAccountAddModal = () => {
@@ -169,13 +165,15 @@ const Accounts = () => {
   };
 
   const createAccount = async () => {
+    if (isError) return false;
+
     const avatar = await createAvatarUrl(avatarFile);
 
     const response = await postRequest({
       url: `${process.env.SERVER}/api/accounts`,
       credentials: "include",
       body: {
-        name: modalValues.name || "my account",
+        name: modalValues.name,
         position: "",
         avatar,
       },
@@ -185,7 +183,11 @@ const Accounts = () => {
       const fetchedAccount = response.data.account as AccountType;
 
       setAccounts((prev) => [...prev, getAccount(fetchedAccount)]);
+
+      return true;
     }
+
+    return false;
   };
 
   const openAccountEditModal = (account: AccountType) => {
@@ -200,6 +202,8 @@ const Accounts = () => {
   };
 
   const accountUpdate = async () => {
+    if (isError) return false;
+
     const updatedAccountValues = modalValues;
 
     if (avatarFile) {
@@ -243,25 +247,16 @@ const Accounts = () => {
           name: updatedAccountValues.name,
           avatar: updatedAccountValues.avatar,
         };
+
         setActiveAccount(updatedActiveAccount);
       }
+
+      return true;
     } else {
       console.log(response.data.error);
     }
-  };
 
-  /**
-   * @description closes the modal and resets the values
-   */
-  const handleAccountClose = () => {
-    setError({
-      texts: [],
-      show: false,
-    });
-
-    setAvatarFile(null);
-
-    close(setModalDefaults);
+    return false;
   };
 
   const handleAccountNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,11 +276,12 @@ const Accounts = () => {
           modalValues={modalValues}
           handleAccountNameChange={handleAccountNameChange}
           handleAccountModification={handleAccountModification}
-          handleAccountClose={handleAccountClose}
+          handleAccountClose={() => close(setModalDefaults)}
           avatarFile={avatarFile}
           setAvatarFile={setAvatarFile}
-          error={error}
-          setError={setError}
+          setIsError={setIsError}
+          setErrors={setErrors}
+          errors={errors}
         />
       </Modal>
 

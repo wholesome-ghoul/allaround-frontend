@@ -1,6 +1,10 @@
 import type { Social, AccountType } from "../utils";
 import { SocialOauthMap, postRequest } from "../utils";
 
+const Errors = {
+  modalValueName: false,
+};
+
 const DEFAULT_ACCOUNT_AVATAR = "/assets/images/account.webp";
 
 const capitalize = (str: string | undefined) => {
@@ -113,4 +117,5 @@ export {
   updateAccount,
   isSocialEnabled,
   createAvatarUrl,
+  Errors,
 };

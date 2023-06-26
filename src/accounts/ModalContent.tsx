@@ -8,7 +8,7 @@ import {
   Icons,
 } from "@allaround/all-components";
 
-import { DisplayError } from "../utils";
+import { Errors } from "./utils";
 
 export type ModalValues = {
   avatar: string | File | any;
@@ -22,10 +22,11 @@ type ModalContentProps = {
   handleAccountNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   avatarFile: File | null;
   setAvatarFile: (file: File | null) => void;
-  error: DisplayError;
-  setError: (error: DisplayError) => void;
   handleAccountModification: () => void;
   handleAccountClose: () => void;
+  setIsError: (isError: boolean) => void;
+  setErrors: React.Dispatch<React.SetStateAction<typeof Errors>>;
+  errors: typeof Errors;
 };
 
 const ModalContent = ({
@@ -33,13 +34,14 @@ const ModalContent = ({
   handleAccountNameChange,
   avatarFile,
   setAvatarFile,
-  error,
-  setError,
+  setIsError,
   handleAccountModification,
   handleAccountClose,
+  setErrors,
+  errors,
 }: ModalContentProps) => {
   return (
-    <Container grid={{ cols: 1, rows: "auto", gap: "20px" }} autoHor>
+    <Container grid={{ cols: 1, rows: "auto", gap: "30px" }} autoHor>
       {modalValues.avatar || avatarFile ? (
         <Image
           src={avatarFile || modalValues.avatar}
@@ -50,23 +52,18 @@ const ModalContent = ({
           icon={<Icons.EditIcon />}
           iconPosition="bottom"
           maxSize={2 * 1024}
-          isError={error.show}
-          handleError={({ text, show }) => setError({ texts: [text], show })}
+          setIsError={setIsError}
           setFile={setAvatarFile}
           editable
         />
       ) : (
-        <>
-          <Upload
-            text="Upload avatar"
-            accept={["image/png"]}
-            maxSize={2 * 1024}
-            isError={error.show}
-            handleError={({ text, show }) => setError({ texts: [text], show })}
-            setFile={setAvatarFile}
-          />
-          {error.show && <Container noGrid>{error.texts.join("")}</Container>}
-        </>
+        <Upload
+          text="Upload avatar"
+          accept={["image/png"]}
+          maxSize={2 * 1024}
+          setIsError={setIsError}
+          setFile={setAvatarFile}
+        />
       )}
 
       <Container styles={{ flexFlow: "column" }} gap="10px" noGrid flex>
@@ -76,7 +73,16 @@ const ModalContent = ({
         <Input
           onChange={handleAccountNameChange}
           value={modalValues.name}
+          setIsError={(isError) => {
+            setIsError(isError);
+            setErrors((prev: typeof Errors) => ({
+              ...prev,
+              modalValueName: isError,
+            }));
+          }}
+          isError={errors.modalValueName}
           placeholder="account name"
+          required
           fill
         />
       </Container>
