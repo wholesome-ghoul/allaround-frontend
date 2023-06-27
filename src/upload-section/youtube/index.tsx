@@ -16,7 +16,7 @@ import {
 import { postRequest, theme } from "../../utils";
 import Context from "../../context";
 
-const { useIndexedDb } = hooks;
+const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
 
 type Category = {
   id: string;
@@ -30,7 +30,7 @@ const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
 const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [tags, setTags] = useState([""]);
+  const [tags, setTags] = useState<string[]>([]);
   const [category, setCategory] = useState(0);
   const [privacy, setPrivacy] = useState(0);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
@@ -43,6 +43,7 @@ const YoutubeUpload = () => {
       version: 1,
       store: { name: "value", keyPath: "value" },
     });
+  const [localCache, setLocalCache] = useLocalStorage("youtubeUpload");
   const [errors, setErrors] = useState({
     title: false,
     description: false,
@@ -50,6 +51,34 @@ const YoutubeUpload = () => {
     thumbnail: false,
     video: false,
   });
+
+  useEventListener(
+    "beforeunload",
+    () => {
+      const cache = {
+        title,
+        description,
+        tags,
+        date,
+      };
+
+      setLocalCache(JSON.stringify(cache));
+    },
+    window
+  );
+
+  useEffect(() => {
+    if (!localCache) return;
+
+    const cache = JSON.parse(localCache);
+
+    console.log(cache);
+
+    setTitle(cache.title || "");
+    setDescription(cache.description || "");
+    setTags(cache.tags || []);
+    setDate(cache.date || null);
+  }, []);
 
   useEffect(() => {
     const fetchVideoCategories = async () => {
@@ -82,16 +111,12 @@ const YoutubeUpload = () => {
     fetchVideoCategories();
   }, []);
 
-  const handleTagsChange = (values: string[]) => {
-    setTags(values);
-  };
-
   return (
     <Container grid={{ rows: "auto", cols: 12 }} styles={{ height: "unset" }}>
       <Container
         grid={[
-          { bp: 0, cols: 1, rows: "auto", gap: "1rem" },
-          { bp: theme.bp.px.md2, cols: 12, rows: "auto", gap: "1rem" },
+          { bp: 0, cols: 1, rows: "auto", gap: "20px" },
+          { bp: theme.bp.px.md2, cols: 12, rows: "auto", gap: "20px" },
         ]}
         gridPosition={[
           { bp: 0, colPos: "span 12", rowPos: "3/9" },
@@ -159,8 +184,9 @@ const YoutubeUpload = () => {
         <Tags
           placeholder="Add tags"
           max={500}
-          onChange={handleTagsChange}
+          onChange={setTags}
           label="Tags"
+          initialTags={tags}
           isError={errors.tags}
           setIsError={(value) => setErrors({ ...errors, tags: value })}
           gridPosition={[
@@ -209,7 +235,7 @@ const YoutubeUpload = () => {
             noGrid
             flex
           >
-            <Label>Category</Label>
+            <Label size="large">Category</Label>
             <Select
               selectedIndex={category}
               setSelectedIndex={setCategory}
@@ -224,7 +250,7 @@ const YoutubeUpload = () => {
             noGrid
             flex
           >
-            <Label>Privacy</Label>
+            <Label size="large">Privacy</Label>
             <Select
               selectedIndex={privacy}
               setSelectedIndex={setPrivacy}
@@ -248,7 +274,7 @@ const YoutubeUpload = () => {
           noGrid
           flex
         >
-          <Label>Schedule</Label>
+          <Label size="large">Schedule</Label>
           <Scheduler setDate={setDate} fill />
         </Container>
 
