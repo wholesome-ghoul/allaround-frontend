@@ -10,20 +10,17 @@ import {
   Image,
   Label,
   Button,
+  Switch,
   hooks,
 } from "@allaround/all-components";
 
 import { postRequest, theme } from "../../utils";
 import Context from "../../context";
+import type { Option } from "./types";
+import useFetchVideoCategories from "./use-fetch-video-categories";
+import { uploadGaurdsPassed } from "./utils";
 
 const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
-
-type Category = {
-  id: string;
-  snippet: {
-    title: string;
-  };
-};
 
 const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
 
@@ -31,18 +28,26 @@ const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [category, setCategory] = useState(0);
-  const [privacy, setPrivacy] = useState(0);
+  const [category, setCategory] = useState<Option>({ value: "", label: "" });
+  const [privacy, setPrivacy] = useState<Option>({
+    value: "public",
+    label: "Public",
+  });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
-  const [date, setDate] = useState<Date | null>(null);
+  const [date, setDate] = useState<Date | number>(Date.now());
+  const [enableScheduling, setEnableScheduling] = useState(false);
+  const [notifySubscribers, setNotifySubscribers] = useState(false);
   const { activeAccount } = useContext(Context.Account);
-  const { setDbValues: setVideoCategories, dbValues: videoCategories } =
-    useIndexedDb({
-      name: "youtubeVideoCategories",
-      version: 1,
-      store: { name: "value", keyPath: "value" },
-    });
+  const {
+    setDbValues: setVideoCategories,
+    dbValues: videoCategories,
+    isFetched: isVideoCategoriesFetched,
+  } = useIndexedDb({
+    name: "youtubeVideoCategories",
+    version: 1,
+    store: { name: "value", keyPath: "value" },
+  });
   const [localCache, setLocalCache] = useLocalStorage("youtubeUpload");
   const [errors, setErrors] = useState({
     title: false,
@@ -52,14 +57,26 @@ const YoutubeUpload = () => {
     video: false,
   });
 
+  useFetchVideoCategories({
+    activeAccount,
+    setCategory,
+    setVideoCategories,
+    videoCategories,
+    isVideoCategoriesFetched,
+  });
+
   useEventListener(
     "beforeunload",
     () => {
       const cache = {
+        date,
         title,
         description,
         tags,
-        date,
+        category,
+        privacy,
+        notifySubscribers,
+        enableScheduling,
       };
 
       setLocalCache(JSON.stringify(cache));
@@ -68,48 +85,59 @@ const YoutubeUpload = () => {
   );
 
   useEffect(() => {
+    // we are caching fetched `videoCategories` in indexedDB and initial
+    // category will be empty if we won't set it manually
+    if (category.value === "" && videoCategories.length > 0) {
+      setCategory(videoCategories[0]);
+    }
+  }, [category, videoCategories]);
+
+  useEffect(() => {
     if (!localCache) return;
 
     const cache = JSON.parse(localCache);
 
-    console.log(cache);
-
     setTitle(cache.title || "");
     setDescription(cache.description || "");
     setTags(cache.tags || []);
-    setDate(cache.date || null);
+    setDate(cache.date || Date.now());
+    setCategory(cache.category || { value: "", label: "" });
+    setPrivacy(cache.privacy || { value: 1, label: "Public" });
+    setEnableScheduling(cache.enableScheduling || false);
+    setNotifySubscribers(cache.notifySubscribers || false);
   }, []);
 
-  useEffect(() => {
-    const fetchVideoCategories = async () => {
-      const url = `${process.env.SERVER}/api/service/google/youtube/video-categories`;
-      const body = { accountId: activeAccount?.id };
+  const handleUpload = async () => {
+    if (!uploadGaurdsPassed) return;
 
-      const response = await postRequest({
-        url,
-        body,
-        credentials: "include",
-      });
-
-      if (response.status === 304) return;
-
-      if (response.success) {
-        const data = response.data.categories as Category[];
-        const categories = data.map((category) => {
-          return {
-            value: category.id,
-            label: category.snippet.title,
-          };
-        });
-
-        setVideoCategories(categories);
-      } else {
-        console.error(response.data.error);
-      }
+    const snippet = {
+      title,
+      description,
+      tags,
+      categoryId: category.value,
     };
 
-    fetchVideoCategories();
-  }, []);
+    const status = {
+      privacyStatus: privacy.value,
+    };
+
+    const body = {
+      accountId: activeAccount?.id,
+      publishAt: enableScheduling ? new Date(date).toISOString() : null,
+      thumbnail: thumbnail ? thumbnail : null,
+      notifySubscribers,
+      snippet,
+      status,
+    };
+
+    const response = await postRequest({
+      url: `${process.env.SERVER}/api/service/google/youtube/upload/video`,
+      body,
+      credentials: "include",
+    });
+
+    console.log(response.data);
+  };
 
   return (
     <Container grid={{ rows: "auto", cols: 12 }} styles={{ height: "unset" }}>
@@ -145,7 +173,7 @@ const YoutubeUpload = () => {
             />
           ) : (
             <Upload
-              text="Click or Drag a video to upload"
+              text="Click or Drag a video to upload (required)"
               accept={["video/mp4"]}
               setIsError={(value) => setErrors({ ...errors, video: value })}
               setFile={setVideo}
@@ -157,6 +185,7 @@ const YoutubeUpload = () => {
           placeholder="Add a title for your video"
           max={100}
           value={title}
+          current={title.length}
           onChange={(e) => setTitle(e.target.value)}
           label="Title (required)"
           isError={errors.title}
@@ -172,6 +201,7 @@ const YoutubeUpload = () => {
           max={5000}
           rows={15}
           value={description}
+          current={description.length}
           onChange={(e) => setDescription(e.target.value)}
           label="Description"
           isError={errors.description}
@@ -237,8 +267,8 @@ const YoutubeUpload = () => {
           >
             <Label size="large">Category</Label>
             <Select
-              selectedIndex={category}
-              setSelectedIndex={setCategory}
+              selectedOption={category}
+              setSelectedOption={setCategory}
               options={videoCategories}
               fill
             />
@@ -252,12 +282,12 @@ const YoutubeUpload = () => {
           >
             <Label size="large">Privacy</Label>
             <Select
-              selectedIndex={privacy}
-              setSelectedIndex={setPrivacy}
+              selectedOption={privacy}
+              setSelectedOption={setPrivacy}
               options={[
-                { label: "Public", value: 1 },
-                { label: "Private", value: 2 },
-                { label: "Unlisted", value: 3 },
+                { label: "Public", value: "public" },
+                { label: "Private", value: "private" },
+                { label: "Unlisted", value: "unlisted" },
               ]}
               fill
             />
@@ -274,14 +304,37 @@ const YoutubeUpload = () => {
           noGrid
           flex
         >
-          <Label size="large">Schedule</Label>
-          <Scheduler setDate={setDate} fill />
+          <Switch
+            onToggle={() => setEnableScheduling((prev) => !prev)}
+            checked={enableScheduling}
+            label="Schedule"
+            labelSize="large"
+          />
+          {enableScheduling && (
+            <Scheduler setDate={setDate} initialDate={date} fill />
+          )}
+        </Container>
+
+        <Container
+          gridPosition={[
+            { bp: 0, colPos: 1, rowPos: 8 },
+            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "8/9" },
+          ]}
+          styles={{ whiteSpace: "nowrap", height: "unset" }}
+          noGrid
+        >
+          <Switch
+            onToggle={() => setNotifySubscribers((prev) => !prev)}
+            checked={notifySubscribers}
+            label="Notify Subscribers"
+            labelSize="large"
+          />
         </Container>
 
         <Button
-          onClick={() => {}}
+          onClick={handleUpload}
           gridPosition={[
-            { bp: 0, colPos: 1, rowPos: 8 },
+            { bp: 0, colPos: 1, rowPos: 9 },
             { bp: theme.bp.px.md2, colPos: "8/13", rowPos: 6 },
           ]}
           fill
