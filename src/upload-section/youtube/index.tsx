@@ -107,6 +107,72 @@ const YoutubeUpload = () => {
     setNotifySubscribers(cache.notifySubscribers || false);
   }, []);
 
+  useEffect(() => {
+    if (!video) {
+      console.log("empty");
+      return;
+    }
+
+    const getPreSignedUrls = async () => {
+      const body = {
+        accountId: activeAccount?.id,
+        fileName: video.name,
+        fileType: video.type,
+        size: video.size,
+      };
+
+      const response = await postRequest({
+        url: `${process.env.SERVER}/aws/s3/presigned-url`,
+        body,
+        credentials: "include",
+      });
+
+      if (response.success) {
+        return response.data;
+      } else {
+        console.log(response.data.error);
+        return {};
+      }
+    };
+
+    const uploadChunks = async () => {
+      const data = await getPreSignedUrls();
+      const chunkSize = data.chunkSize as number;
+      const signedUrls = data.signedUrls as string[];
+
+      if (!signedUrls || !chunkSize) return;
+
+      const size = video.size;
+      const chunks = signedUrls.length
+
+      const promises: any[] = [];
+      for (let i = 0; i < chunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(size, start + chunkSize);
+        const chunk = video.slice(start, end);
+
+        console.log(signedUrls);
+        const promise = fetch(signedUrls[i], {
+          method: "PUT",
+          headers: {
+            "Content-Type": video.type,
+          },
+          body: chunk,
+        });
+
+        promises.push(promise);
+      }
+
+      try{
+      await Promise.all(promises);
+      } catch(e){
+        console.log(e);
+      }
+    };
+
+    uploadChunks();
+  }, [video]);
+
   const handleUpload = async () => {
     if (!uploadGaurdsPassed) return;
 
