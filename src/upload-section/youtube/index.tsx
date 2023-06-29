@@ -143,15 +143,15 @@ const YoutubeUpload = () => {
       if (!signedUrls || !chunkSize) return;
 
       const size = video.size;
-      const chunks = signedUrls.length
+      const chunks = signedUrls.length;
 
       const promises: any[] = [];
+
       for (let i = 0; i < chunks; i++) {
         const start = i * chunkSize;
         const end = Math.min(size, start + chunkSize);
         const chunk = video.slice(start, end);
 
-        console.log(signedUrls);
         const promise = fetch(signedUrls[i], {
           method: "PUT",
           headers: {
@@ -163,11 +163,46 @@ const YoutubeUpload = () => {
         promises.push(promise);
       }
 
-      try{
-      await Promise.all(promises);
-      } catch(e){
-        console.log(e);
+      const responses = await Promise.all(promises);
+      console.log(responses);
+      const readers = responses.map((response) => response.body?.getReader());
+      let bytesUploaded = 0
+
+      while (true) {
+        const results = await Promise.all(
+          readers.map((reader) => reader?.read())
+        );
+
+        for (const result of results) {
+          if (result.done) {
+            break;
+          }
+
+          bytesUploaded += result.value.length;
+          const progress = Math.round((bytesUploaded / size) * 100);
+
+          console.log(progress);
+        }
+
+        if (results.every((result) => result.done)) {
+          break;
+        }
       }
+
+      console.log("done", bytesUploaded, size);
+
+      // while (true) {
+      //   const { done, value } = await reader.read();
+
+      //   if (done) {
+      //     break
+      //   }
+
+      //   bytesUploaded += value.length
+      //   const progress = Math.round((bytesUploaded / size) * 100)
+
+      //   console.log(progress)
+      // }
     };
 
     uploadChunks();
