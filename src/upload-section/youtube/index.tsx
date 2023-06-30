@@ -19,6 +19,7 @@ import Context from "../../context";
 import type { Option } from "./types";
 import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
+import useUploadVideo from "./use-upload-video";
 
 const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
 
@@ -56,6 +57,7 @@ const YoutubeUpload = () => {
     thumbnail: false,
     video: false,
   });
+  useUploadVideo({ video, activeAccount });
 
   useFetchVideoCategories({
     activeAccount,
@@ -106,107 +108,6 @@ const YoutubeUpload = () => {
     setEnableScheduling(cache.enableScheduling || false);
     setNotifySubscribers(cache.notifySubscribers || false);
   }, []);
-
-  useEffect(() => {
-    if (!video) {
-      console.log("empty");
-      return;
-    }
-
-    const getPreSignedUrls = async () => {
-      const body = {
-        accountId: activeAccount?.id,
-        fileName: video.name,
-        fileType: video.type,
-        size: video.size,
-      };
-
-      const response = await postRequest({
-        url: `${process.env.SERVER}/aws/s3/presigned-url`,
-        body,
-        credentials: "include",
-      });
-
-      if (response.success) {
-        return response.data;
-      } else {
-        console.log(response.data.error);
-        return {};
-      }
-    };
-
-    const uploadChunks = async () => {
-      const data = await getPreSignedUrls();
-      const chunkSize = data.chunkSize as number;
-      const signedUrls = data.signedUrls as string[];
-
-      if (!signedUrls || !chunkSize) return;
-
-      const size = video.size;
-      const chunks = signedUrls.length;
-
-      const promises: any[] = [];
-
-      for (let i = 0; i < chunks; i++) {
-        const start = i * chunkSize;
-        const end = Math.min(size, start + chunkSize);
-        const chunk = video.slice(start, end);
-
-        const promise = fetch(signedUrls[i], {
-          method: "PUT",
-          headers: {
-            "Content-Type": video.type,
-          },
-          body: chunk,
-        });
-
-        promises.push(promise);
-      }
-
-      const responses = await Promise.all(promises);
-      console.log(responses);
-      const readers = responses.map((response) => response.body?.getReader());
-      let bytesUploaded = 0
-
-      while (true) {
-        const results = await Promise.all(
-          readers.map((reader) => reader?.read())
-        );
-
-        for (const result of results) {
-          if (result.done) {
-            break;
-          }
-
-          bytesUploaded += result.value.length;
-          const progress = Math.round((bytesUploaded / size) * 100);
-
-          console.log(progress);
-        }
-
-        if (results.every((result) => result.done)) {
-          break;
-        }
-      }
-
-      console.log("done", bytesUploaded, size);
-
-      // while (true) {
-      //   const { done, value } = await reader.read();
-
-      //   if (done) {
-      //     break
-      //   }
-
-      //   bytesUploaded += value.length
-      //   const progress = Math.round((bytesUploaded / size) * 100)
-
-      //   console.log(progress)
-      // }
-    };
-
-    uploadChunks();
-  }, [video]);
 
   const handleUpload = async () => {
     if (!uploadGaurdsPassed) return;
