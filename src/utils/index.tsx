@@ -1,7 +1,7 @@
 import { Icons } from "@allaround/all-components";
 
 export const SocialAccountMap: { [key: string]: JSX.Element } = {
-  youtube: <Icons.YoutubeIcon size="small" fill="red"/>,
+  youtube: <Icons.YoutubeIcon size="small" fill="red" />,
   tiktok: <Icons.TiktokIcon size="small" fill="black" />,
 };
 
@@ -16,5 +16,6 @@ export { default as deleteRequest } from "./delete-request";
 export { default as theme } from "./theme";
 export { default as validators } from "./validators";
 export { default as routes } from "./routes";
+export { default as getSignedUrl } from "./get-signed-url";
 
 export * from "./types";

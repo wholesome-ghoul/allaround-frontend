@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
   Container,
   Textarea,
@@ -6,7 +6,6 @@ import {
   Select,
   Upload,
   Scheduler,
-  Video,
   Image,
   Label,
   Button,
@@ -16,14 +15,13 @@ import {
 
 import { postRequest, theme } from "../../utils";
 import Context from "../../context";
-import type { Option } from "./types";
+import { Status, type Errors, type Option } from "./types";
 import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
-import useUploadVideo from "./use-upload-video";
+import VideoWrapper from "./VideoWrapper";
+import savePost from "./save-post";
 
 const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
-
-const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
 
 const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
@@ -35,7 +33,8 @@ const YoutubeUpload = () => {
     label: "Public",
   });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [video, setVideo] = useState<File | null>(null);
+  const [video, setVideo] = useState<File | string | null>(null);
+  const [videoS3Key, setVideoS3Key] = useState<string>("");
   const [date, setDate] = useState<Date | number>(Date.now());
   const [enableScheduling, setEnableScheduling] = useState(false);
   const [notifySubscribers, setNotifySubscribers] = useState(false);
@@ -50,14 +49,58 @@ const YoutubeUpload = () => {
     store: { name: "value", keyPath: "value" },
   });
   const [localCache, setLocalCache] = useLocalStorage("youtubeUpload");
-  const [errors, setErrors] = useState({
+  const [postId, setPostId] = useState("");
+  const [youtubePostId, setYoutubePostId] = useState("");
+  const [errors, setErrors] = useState<Errors>({
     title: false,
     description: false,
     tags: false,
     thumbnail: false,
     video: false,
   });
-  useUploadVideo({ video, activeAccount });
+  const saveDraftPost = useCallback(async () => {
+    if (typeof video !== "string") return;
+    if (postId && youtubePostId) return;
+
+    const videoUrl = video;
+    const s3Key = videoS3Key;
+
+    const savedPost = await savePost({
+      videoUrl,
+      s3Key,
+      title,
+      description,
+      tags,
+      notifySubscribers,
+      postId,
+      youtubePostId,
+      thumbnailUrl: "",
+      categoryId: Number(category.value),
+      privacy: privacy.value.toString(),
+      publishAt: null,
+      accountId: activeAccount?.id,
+      status: Status.DRAFT,
+    });
+
+    if (savedPost.success) {
+      setPostId(savedPost.data.postId as string);
+      setYoutubePostId(savedPost.data.youtubePostId as string);
+    } else {
+      console.log(savedPost.data.error);
+    }
+  }, [
+    postId,
+    youtubePostId,
+    video,
+    videoS3Key,
+    title,
+    description,
+    tags,
+    notifySubscribers,
+    category,
+    privacy,
+    activeAccount,
+  ]);
 
   useFetchVideoCategories({
     activeAccount,
@@ -70,7 +113,7 @@ const YoutubeUpload = () => {
   useEventListener(
     "beforeunload",
     () => {
-      const cache = {
+      const cache: { [key: string]: any } = {
         date,
         title,
         description,
@@ -79,7 +122,15 @@ const YoutubeUpload = () => {
         privacy,
         notifySubscribers,
         enableScheduling,
+        postId,
+        youtubePostId,
+        videoS3Key,
+        video: null,
       };
+
+      if (typeof video === "string") {
+        cache.video = video;
+      }
 
       setLocalCache(JSON.stringify(cache));
     },
@@ -94,6 +145,12 @@ const YoutubeUpload = () => {
     }
   }, [category, videoCategories]);
 
+  // useEffect(() => {
+  //   if (typeof video === "string" && postId === "" && youtubePostId === "") {
+  //     saveDraftPost();
+  //   }
+  // }, [video, postId, youtubePostId, saveDraftPost]);
+
   useEffect(() => {
     if (!localCache) return;
 
@@ -104,9 +161,16 @@ const YoutubeUpload = () => {
     setTags(cache.tags || []);
     setDate(cache.date || Date.now());
     setCategory(cache.category || { value: "", label: "" });
-    setPrivacy(cache.privacy || { value: 1, label: "Public" });
+    setPrivacy(cache.privacy || { value: "public", label: "Public" });
     setEnableScheduling(cache.enableScheduling || false);
     setNotifySubscribers(cache.notifySubscribers || false);
+    setPostId(cache.postId || "");
+    setYoutubePostId(cache.youtubePostId || "");
+    setVideoS3Key(cache.videoS3Key || "");
+
+    if (cache.video) {
+      setVideo(cache.video);
+    }
   }, []);
 
   const handleUpload = async () => {
@@ -166,21 +230,14 @@ const YoutubeUpload = () => {
           ]}
           noGrid
         >
-          {!!video ? (
-            <Video
-              file={video}
-              maxDuration={VIDEO_MAX_DURATION_SECONDS}
-              setIsError={(value) => setErrors({ ...errors, video: value })}
-              clickHandler={() => setVideo(null)}
-            />
-          ) : (
-            <Upload
-              text="Click or Drag a video to upload (required)"
-              accept={["video/mp4"]}
-              setIsError={(value) => setErrors({ ...errors, video: value })}
-              setFile={setVideo}
-            />
-          )}
+          <VideoWrapper
+            video={video}
+            setVideo={setVideo}
+            setVideoS3Key={setVideoS3Key}
+            setErrors={setErrors}
+            errors={errors}
+            activeAccount={activeAccount}
+          />
         </Container>
 
         <Textarea

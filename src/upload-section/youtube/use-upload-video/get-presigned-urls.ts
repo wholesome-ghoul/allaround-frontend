@@ -25,7 +25,9 @@ const getPreSignedUrls = async ({
   });
 
   if (response.success) {
-    return response.data.signedUrls as ReturnSignedUrl[];
+    return (response.data.signedUrls as ReturnSignedUrl[]).sort(
+      (a, b) => a.PartNumber - b.PartNumber
+    );
   }
 
   console.log(response.data.error);

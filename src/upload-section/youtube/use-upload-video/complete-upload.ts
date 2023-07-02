@@ -10,12 +10,19 @@ type CompleteUpload = {
   activeAccount: AccountType | null;
 };
 
+type ReturnS3Response = {
+  Location: string;
+  Key: string;
+  ETag?: string;
+  Bucket?: string;
+};
+
 const completeUpload = async ({
   activeAccount,
   uploadId,
   fileKey,
   parts,
-}: CompleteUpload) => {
+}: CompleteUpload): Promise<ReturnS3Response> => {
   const response = await postRequest({
     url: `${process.env.SERVER}/aws/s3/multipart/complete-upload`,
     credentials: "include",
@@ -23,11 +30,11 @@ const completeUpload = async ({
   });
 
   if (response.success) {
-    return response.data;
+    return response.data as ReturnS3Response;
   }
 
   console.log(response.data.error);
-  return {};
+  return {} as ReturnS3Response;
 };
 
 export default completeUpload;
