@@ -65,6 +65,7 @@ const useUploadVideo = ({
 
       setVideoUrl(s3Response.Location);
       setS3Key(s3Response.Key);
+      setCurrentProgress(100);
     };
 
     upload();

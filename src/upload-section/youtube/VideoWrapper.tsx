@@ -10,8 +10,8 @@ const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
 const { useConfirm } = hooks;
 
 type Props = {
-  video: File | string | null;
-  setVideo: (value: File | string | null) => void;
+  signedUrl: string | null;
+  setVideoUrl: (value: string | null) => void;
   setVideoS3Key: (value: string) => void;
   setErrors: (errors: Errors) => void;
   errors: Errors;
@@ -19,39 +19,47 @@ type Props = {
 };
 
 const VideoWrapper = ({
-  video,
   setErrors,
   errors,
-  setVideo,
+  signedUrl,
+  setVideoUrl,
   setVideoS3Key,
   activeAccount,
 }: Props) => {
+  const [video, setVideo] = useState<File | null>(null);
   const [currentProgress, setCurrentProgress] = useState(0);
-  // const { videoUrl, s3Key } = useUploadVideo({
-  //   video,
-  //   activeAccount,
-  //   setCurrentProgress,
-  // });
+  const { videoUrl, s3Key } = useUploadVideo({
+    video,
+    activeAccount,
+    setCurrentProgress,
+  });
 
-  // useEffect(() => {
-  //   if (videoUrl && s3Key) {
-  //     const fetchSignedUrl = async () => {
-  //       const signedUrl = await getSignedUrl({
-  //         Key: s3Key,
-  //         accountId: activeAccount?.id,
-  //       });
+  useEffect(() => {
+    if (videoUrl && s3Key) {
+      const fetchSignedUrl = async () => {
+        const signedUrl = await getSignedUrl({
+          Key: s3Key,
+          accountId: activeAccount?.id,
+        });
 
-  //       setVideo(signedUrl);
-  //       setVideoS3Key(s3Key);
-  //     };
+        setVideoUrl(signedUrl);
+        setVideoS3Key(s3Key);
+      };
 
-  //     fetchSignedUrl();
-  //   }
-  // }, [videoUrl]);
+      fetchSignedUrl();
+    }
+  }, [videoUrl]);
+
+  useEffect(() => {
+    if (signedUrl && currentProgress !== 100) {
+      setCurrentProgress(100);
+    }
+  }, [signedUrl, currentProgress]);
 
   const [handleVideoRemove, confirmPrompt] = useConfirm(
     async () => {
       setVideo(null);
+      setVideoUrl(null);
       setCurrentProgress(0);
     },
     {
@@ -64,10 +72,10 @@ const VideoWrapper = ({
   return (
     <>
       {confirmPrompt}
-      {!!video ? (
-        currentProgress === 100 ? (
+      {!!video || !!signedUrl ? (
+        currentProgress === 100 && !!signedUrl ? (
           <Video
-            src={video}
+            src={signedUrl}
             maxDuration={VIDEO_MAX_DURATION_SECONDS}
             setIsError={(value) => setErrors({ ...errors, video: value })}
             clickHandler={handleVideoRemove}

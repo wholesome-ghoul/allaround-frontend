@@ -33,7 +33,7 @@ const YoutubeUpload = () => {
     label: "Public",
   });
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const [video, setVideo] = useState<File | string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoS3Key, setVideoS3Key] = useState<string>("");
   const [date, setDate] = useState<Date | number>(Date.now());
   const [enableScheduling, setEnableScheduling] = useState(false);
@@ -59,10 +59,9 @@ const YoutubeUpload = () => {
     video: false,
   });
   const saveDraftPost = useCallback(async () => {
-    if (typeof video !== "string") return;
+    if (typeof videoUrl !== "string") return;
     if (postId && youtubePostId) return;
 
-    const videoUrl = video;
     const s3Key = videoS3Key;
 
     const savedPost = await savePost({
@@ -91,7 +90,7 @@ const YoutubeUpload = () => {
   }, [
     postId,
     youtubePostId,
-    video,
+    videoUrl,
     videoS3Key,
     title,
     description,
@@ -125,11 +124,11 @@ const YoutubeUpload = () => {
         postId,
         youtubePostId,
         videoS3Key,
-        video: null,
+        videoUrl: null,
       };
 
-      if (typeof video === "string") {
-        cache.video = video;
+      if (typeof videoUrl === "string") {
+        cache.videoUrl = videoUrl;
       }
 
       setLocalCache(JSON.stringify(cache));
@@ -146,10 +145,10 @@ const YoutubeUpload = () => {
   }, [category, videoCategories]);
 
   // useEffect(() => {
-  //   if (typeof video === "string" && postId === "" && youtubePostId === "") {
+  //   if (typeof videoUrl === "string" && postId === "" && youtubePostId === "") {
   //     saveDraftPost();
   //   }
-  // }, [video, postId, youtubePostId, saveDraftPost]);
+  // }, [videoUrl, postId, youtubePostId, saveDraftPost]);
 
   useEffect(() => {
     if (!localCache) return;
@@ -168,8 +167,8 @@ const YoutubeUpload = () => {
     setYoutubePostId(cache.youtubePostId || "");
     setVideoS3Key(cache.videoS3Key || "");
 
-    if (cache.video) {
-      setVideo(cache.video);
+    if (cache.videoUrl) {
+      setVideoUrl(cache.videoUrl);
     }
   }, []);
 
@@ -231,8 +230,8 @@ const YoutubeUpload = () => {
           noGrid
         >
           <VideoWrapper
-            video={video}
-            setVideo={setVideo}
+            signedUrl={videoUrl}
+            setVideoUrl={setVideoUrl}
             setVideoS3Key={setVideoS3Key}
             setErrors={setErrors}
             errors={errors}

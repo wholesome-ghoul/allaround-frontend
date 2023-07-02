@@ -31,7 +31,10 @@ const uploadChunks = async ({
 
     const etag = response.headers.get("ETag");
 
-    percentComplete += Math.ceil(100 / chunkCount);
+    percentComplete += Number((100 / chunkCount).toFixed(2));
+    if (percentComplete > 99) {
+      percentComplete = 99;
+    }
     setCurrentProgress(percentComplete);
 
     return etag ?? "";
