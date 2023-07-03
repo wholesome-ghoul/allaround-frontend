@@ -20,6 +20,7 @@ import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
 import VideoWrapper from "./VideoWrapper";
 import savePost from "./save-post";
+import removeVideoFromS3 from "./remove-video-from-s3";
 
 const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
 
@@ -111,7 +112,7 @@ const YoutubeUpload = () => {
 
   useEventListener(
     "beforeunload",
-    () => {
+    async (event: any) => {
       const cache: { [key: string]: any } = {
         date,
         title,
@@ -124,14 +125,12 @@ const YoutubeUpload = () => {
         postId,
         youtubePostId,
         videoS3Key,
-        videoUrl: null,
       };
 
-      if (typeof videoUrl === "string") {
-        cache.videoUrl = videoUrl;
-      }
-
       setLocalCache(JSON.stringify(cache));
+
+      event.preventDefault();
+      event.returnValue = "";
     },
     window
   );
@@ -144,32 +143,35 @@ const YoutubeUpload = () => {
     }
   }, [category, videoCategories]);
 
-  // useEffect(() => {
-  //   if (typeof videoUrl === "string" && postId === "" && youtubePostId === "") {
-  //     saveDraftPost();
-  //   }
-  // }, [videoUrl, postId, youtubePostId, saveDraftPost]);
-
   useEffect(() => {
     if (!localCache) return;
 
-    const cache = JSON.parse(localCache);
+    const handleCache = async () => {
+      const cache = JSON.parse(localCache);
 
-    setTitle(cache.title || "");
-    setDescription(cache.description || "");
-    setTags(cache.tags || []);
-    setDate(cache.date || Date.now());
-    setCategory(cache.category || { value: "", label: "" });
-    setPrivacy(cache.privacy || { value: "public", label: "Public" });
-    setEnableScheduling(cache.enableScheduling || false);
-    setNotifySubscribers(cache.notifySubscribers || false);
-    setPostId(cache.postId || "");
-    setYoutubePostId(cache.youtubePostId || "");
-    setVideoS3Key(cache.videoS3Key || "");
+      setTitle(cache.title || "");
+      setDescription(cache.description || "");
+      setTags(cache.tags || []);
+      setDate(cache.date || Date.now());
+      setCategory(cache.category || { value: "", label: "" });
+      setPrivacy(cache.privacy || { value: "public", label: "Public" });
+      setEnableScheduling(cache.enableScheduling || false);
+      setNotifySubscribers(cache.notifySubscribers || false);
+      setPostId(cache.postId || "");
+      setYoutubePostId(cache.youtubePostId || "");
 
-    if (cache.videoUrl) {
-      setVideoUrl(cache.videoUrl);
-    }
+      if (cache.videoS3Key) {
+        // handle the case when user reloads/leaves page and does not save post
+        await removeVideoFromS3({
+          Key: cache.videoS3Key,
+          accountId: activeAccount?.id,
+        });
+
+        setVideoS3Key("");
+      }
+    };
+
+    handleCache();
   }, []);
 
   const handleUpload = async () => {
@@ -236,6 +238,7 @@ const YoutubeUpload = () => {
             setErrors={setErrors}
             errors={errors}
             activeAccount={activeAccount}
+            cachedS3Key={videoS3Key}
           />
         </Container>
 

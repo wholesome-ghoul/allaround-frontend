@@ -4,6 +4,7 @@ import { Upload, Video, ProgressBar, hooks } from "@allaround/all-components";
 import useUploadVideo from "./use-upload-video";
 import type { Errors } from "./types";
 import { AccountType, getSignedUrl } from "../../utils";
+import removeVideoFromS3 from "./remove-video-from-s3";
 
 const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
 
@@ -16,6 +17,7 @@ type Props = {
   setErrors: (errors: Errors) => void;
   errors: Errors;
   activeAccount: AccountType | null;
+  cachedS3Key?: string;
 };
 
 const VideoWrapper = ({
@@ -25,6 +27,7 @@ const VideoWrapper = ({
   setVideoUrl,
   setVideoS3Key,
   activeAccount,
+  cachedS3Key,
 }: Props) => {
   const [video, setVideo] = useState<File | null>(null);
   const [currentProgress, setCurrentProgress] = useState(0);
@@ -61,6 +64,10 @@ const VideoWrapper = ({
       setVideo(null);
       setVideoUrl(null);
       setCurrentProgress(0);
+      await removeVideoFromS3({
+        Key: s3Key || cachedS3Key,
+        accountId: activeAccount?.id,
+      });
     },
     {
       prompt: "Are you sure you want to remove the video?",
@@ -72,10 +79,10 @@ const VideoWrapper = ({
   return (
     <>
       {confirmPrompt}
-      {!!video || !!signedUrl ? (
-        currentProgress === 100 && !!signedUrl ? (
+      {!!video ? (
+        currentProgress === 100 ? (
           <Video
-            src={signedUrl}
+            src={video}
             maxDuration={VIDEO_MAX_DURATION_SECONDS}
             setIsError={(value) => setErrors({ ...errors, video: value })}
             clickHandler={handleVideoRemove}
