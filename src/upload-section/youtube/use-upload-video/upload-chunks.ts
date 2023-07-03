@@ -8,6 +8,32 @@ type UploadChunks = {
   setCurrentProgress: (progress: number) => void;
 };
 
+const uploadWithRetry = async (
+  partNumber: number,
+  signedUrl: string,
+  chunk: Blob,
+  retryCount = 0
+): Promise<string> => {
+
+  try {
+    const response = await fetch(signedUrl, {
+      method: "PUT",
+      body: chunk,
+    });
+
+    const etag = response.headers.get("ETag");
+
+    return etag ?? "";
+  } catch (error) {
+    if (retryCount > 3) {
+      throw new Error(`Failed to upload part ${partNumber}`);
+    }
+
+    console.log(`Retrying part ${partNumber}`);
+    return uploadWithRetry(partNumber, signedUrl, chunk, retryCount + 1);
+  }
+};
+
 const uploadChunks = async ({
   video,
   signedUrls,
@@ -24,12 +50,7 @@ const uploadChunks = async ({
       PartNumber * chunkSize
     );
 
-    const response = await fetch(signedUrl, {
-      method: "PUT",
-      body: chunk,
-    });
-
-    const etag = response.headers.get("ETag");
+    const etag = await uploadWithRetry(PartNumber, signedUrl, chunk);
 
     percentComplete += 100 / chunkCount;
     percentComplete = parseFloat(percentComplete.toFixed(2));
@@ -38,7 +59,7 @@ const uploadChunks = async ({
     }
     setCurrentProgress(percentComplete);
 
-    return etag ?? "";
+    return etag;
   });
 
   return Promise.all(promises);
