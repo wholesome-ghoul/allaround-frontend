@@ -26,7 +26,7 @@ const savePost = async ({ postId, youtubePostId, ...rest }: Props) => {
     return await putRequest({
       url: `${process.env.SERVER}/api/posts/youtube/edit`,
       credentials: "include",
-      body,
+      body: { ...rest, postId, youtubePostId },
     });
   }
 

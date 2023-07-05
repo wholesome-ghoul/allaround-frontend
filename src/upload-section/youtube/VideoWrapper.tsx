@@ -15,14 +15,12 @@ type Props = {
   setVideoUrl: (value: string | null) => void;
   setVideoS3Key: (value: string) => void;
   setIsError: (value: boolean) => void;
-  isError: boolean;
   activeAccount: AccountType | null;
   cachedS3Key?: string;
 };
 
 const VideoWrapper = ({
   setIsError,
-  isError,
   signedUrl,
   setVideoUrl,
   setVideoS3Key,

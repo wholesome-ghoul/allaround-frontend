@@ -12,10 +12,12 @@ import {
   Switch,
   hooks,
 } from "@allaround/all-components";
+import { useNavigate } from "react-router-dom";
 
 import { postRequest, theme } from "../../utils";
 import Context from "../../context";
-import { Status, type Errors, type Option } from "./types";
+import { Status } from "./types";
+import type { Errors, Option } from "./types";
 import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
 import VideoWrapper from "./VideoWrapper";
@@ -25,6 +27,7 @@ import removeVideoFromS3 from "./remove-video-from-s3";
 const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
 
 const YoutubeUpload = () => {
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -50,8 +53,6 @@ const YoutubeUpload = () => {
     store: { name: "value", keyPath: "value" },
   });
   const [localCache, setLocalCache] = useLocalStorage("youtubeUpload");
-  const [postId, setPostId] = useState("");
-  const [youtubePostId, setYoutubePostId] = useState("");
   const [errors, setErrors] = useState<Errors>({
     title: false,
     description: false,
@@ -60,20 +61,15 @@ const YoutubeUpload = () => {
     video: false,
   });
   const saveDraftPost = useCallback(async () => {
-    if (typeof videoUrl !== "string") return;
-    if (postId && youtubePostId) return;
-
-    const s3Key = videoS3Key;
+    if (!videoUrl) return;
 
     const savedPost = await savePost({
       videoUrl,
-      s3Key,
       title,
       description,
       tags,
       notifySubscribers,
-      postId,
-      youtubePostId,
+      s3Key: videoS3Key,
       thumbnailUrl: "",
       categoryId: Number(category.value),
       privacy: privacy.value.toString(),
@@ -83,14 +79,12 @@ const YoutubeUpload = () => {
     });
 
     if (savedPost.success) {
-      setPostId(savedPost.data.postId as string);
-      setYoutubePostId(savedPost.data.youtubePostId as string);
+      setLocalCache(null);
+      navigate("/");
     } else {
       console.log(savedPost.data.error);
     }
   }, [
-    postId,
-    youtubePostId,
     videoUrl,
     videoS3Key,
     title,
@@ -100,6 +94,7 @@ const YoutubeUpload = () => {
     category,
     privacy,
     activeAccount,
+    // thumbnailUrl,
   ]);
 
   useFetchVideoCategories({
@@ -122,8 +117,6 @@ const YoutubeUpload = () => {
         privacy,
         notifySubscribers,
         enableScheduling,
-        postId,
-        youtubePostId,
         videoS3Key,
       };
 
@@ -157,8 +150,6 @@ const YoutubeUpload = () => {
       setPrivacy(cache.privacy || { value: "public", label: "Public" });
       setEnableScheduling(cache.enableScheduling || false);
       setNotifySubscribers(cache.notifySubscribers || false);
-      setPostId(cache.postId || "");
-      setYoutubePostId(cache.youtubePostId || "");
 
       if (cache.videoS3Key) {
         // handle the case when user reloads/leaves page and does not save post
@@ -210,7 +201,7 @@ const YoutubeUpload = () => {
     <Container grid={{ rows: "auto", cols: 12 }} styles={{ height: "unset" }}>
       <Container
         grid={[
-          { bp: 0, cols: 1, rows: "auto", gap: "20px" },
+          { bp: 0, cols: 1, rows: "auto", gap: "30px" },
           { bp: theme.bp.px.md2, cols: 12, rows: "auto", gap: "20px" },
         ]}
         gridPosition={[
@@ -236,7 +227,6 @@ const YoutubeUpload = () => {
             setVideoUrl={setVideoUrl}
             setVideoS3Key={setVideoS3Key}
             setIsError={(value) => setErrors({ ...errors, video: value })}
-            isError={errors.video}
             activeAccount={activeAccount}
             cachedS3Key={videoS3Key}
           />
@@ -269,7 +259,7 @@ const YoutubeUpload = () => {
           setIsError={(value) => setErrors({ ...errors, description: value })}
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 3 },
-            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "3/6" },
+            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "3/7" },
           ]}
         />
         <Tags
@@ -282,7 +272,7 @@ const YoutubeUpload = () => {
           setIsError={(value) => setErrors({ ...errors, tags: value })}
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 4 },
-            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "6/7" },
+            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "7/8" },
           ]}
         />
 
@@ -303,9 +293,9 @@ const YoutubeUpload = () => {
             />
           ) : (
             <Upload
-              text="Upload thumbnail"
+              text="Upload thumbnail (optional)"
               accept={["image/png", "image/jpg", "image/jpeg"]}
-              maxSize={2 * 1024}
+              maxSize={100 * 1024 * 1024}
               setIsError={(value) => setErrors({ ...errors, thumbnail: value })}
               setFile={setThumbnail}
             />
@@ -317,7 +307,7 @@ const YoutubeUpload = () => {
           gap="1.5rem"
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 6 },
-            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "7/8" },
+            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "8/9" },
           ]}
         >
           <Container
@@ -379,7 +369,7 @@ const YoutubeUpload = () => {
         <Container
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 8 },
-            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "8/9" },
+            { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "9/10" },
           ]}
           styles={{ whiteSpace: "nowrap", height: "unset" }}
           noGrid
@@ -392,16 +382,21 @@ const YoutubeUpload = () => {
           />
         </Container>
 
-        <Button
-          onClick={handleUpload}
+        <Container
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 9 },
             { bp: theme.bp.px.md2, colPos: "8/13", rowPos: 6 },
           ]}
-          fill
+          noGrid
+          flex
         >
-          Publish
-        </Button>
+          <Button onClick={handleUpload} fill>
+            Publish
+          </Button>
+          <Button onClick={saveDraftPost} variant="tertiary" fill>
+            Save as Draft
+          </Button>
+        </Container>
       </Container>
     </Container>
   );
