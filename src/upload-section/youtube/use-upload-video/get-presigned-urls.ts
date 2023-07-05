@@ -30,8 +30,7 @@ const getPreSignedUrls = async ({
     );
   }
 
-  console.log(response.data.error);
-  return {} as ReturnSignedUrl[];
+  throw new Error(response.data.error);
 };
 
 export default getPreSignedUrls;

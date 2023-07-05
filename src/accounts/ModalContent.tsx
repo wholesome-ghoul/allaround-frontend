@@ -10,6 +10,8 @@ import {
 
 import { Errors } from "./utils";
 
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
+
 export type ModalValues = {
   avatar: string | File | any;
   name: string;
@@ -51,7 +53,7 @@ const ModalContent = ({
           objectFit="contain"
           icon={<Icons.EditIcon />}
           iconPosition="bottom"
-          maxSize={2 * 1024}
+          maxSize={MAX_FILE_SIZE}
           setIsError={setIsError}
           setFile={setAvatarFile}
           editable
@@ -60,7 +62,7 @@ const ModalContent = ({
         <Upload
           text="Upload avatar"
           accept={["image/png"]}
-          maxSize={2 * 1024}
+          maxSize={MAX_FILE_SIZE}
           setIsError={setIsError}
           setFile={setAvatarFile}
         />

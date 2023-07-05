@@ -5,7 +5,8 @@ import useUploadVideo from "./use-upload-video";
 import { AccountType, getSignedUrl } from "../../utils";
 import removeVideoFromS3 from "./remove-video-from-s3";
 
-const VIDEO_MAX_DURATION_SECONDS = 60 * 15; // 15 minutes
+const VIDEO_MAX_DURATION_SECONDS = 60 * 60; // 1 hour
+const VIDEO_MAX_SIZE = 1024 * 1024 * 1024 * 20; // 20GB
 
 const { useConfirm } = hooks;
 
@@ -101,6 +102,7 @@ const VideoWrapper = ({
           text="Click or Drag a video to upload (required)"
           accept={["video/mp4"]}
           setIsError={setIsError}
+          maxSize={VIDEO_MAX_SIZE}
           setFile={setVideo}
           errorShow={_error.show}
           errorText={_error.text}

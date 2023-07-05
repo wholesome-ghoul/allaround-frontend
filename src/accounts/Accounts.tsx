@@ -8,7 +8,13 @@ import {
   Checkbox,
 } from "@allaround/all-components";
 
-import { deleteRequest, getRequest, postRequest, putRequest } from "../utils";
+import {
+  deleteRequest,
+  getRequest,
+  postRequest,
+  putRequest,
+  constants,
+} from "../utils";
 import type { AccountType } from "../utils";
 import Account from "./Account";
 import {
@@ -345,6 +351,7 @@ const Accounts = () => {
           children: "add account",
           preferredPosition: "top",
         }}
+        disabled={accounts.length >= constants.MAX_ACCOUNTS_PER_USER}
         noBorder
       />
     </Container>

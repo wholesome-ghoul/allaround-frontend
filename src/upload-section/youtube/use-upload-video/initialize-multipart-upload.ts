@@ -32,8 +32,7 @@ const initializeMultiPartUpload = async ({
     return response.data as ReturnUploadData;
   }
 
-  console.log(response.data.error);
-  return {} as ReturnUploadData;
+  throw new Error(response.data.error);
 };
 
 export default initializeMultiPartUpload;
