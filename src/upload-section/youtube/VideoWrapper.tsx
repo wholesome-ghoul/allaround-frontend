@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Upload, Video, ProgressBar, hooks } from "@allaround/all-components";
+import { Upload, Video, hooks } from "@allaround/all-components";
 
 import useUploadVideo from "./use-upload-video";
-import type { Errors } from "./types";
 import { AccountType, getSignedUrl } from "../../utils";
 import removeVideoFromS3 from "./remove-video-from-s3";
 
@@ -14,15 +13,15 @@ type Props = {
   signedUrl: string | null;
   setVideoUrl: (value: string | null) => void;
   setVideoS3Key: (value: string) => void;
-  setErrors: (errors: Errors) => void;
-  errors: Errors;
+  setIsError: (value: boolean) => void;
+  isError: boolean;
   activeAccount: AccountType | null;
   cachedS3Key?: string;
 };
 
 const VideoWrapper = ({
-  setErrors,
-  errors,
+  setIsError,
+  isError,
   signedUrl,
   setVideoUrl,
   setVideoS3Key,
@@ -31,10 +30,19 @@ const VideoWrapper = ({
 }: Props) => {
   const [video, setVideo] = useState<File | null>(null);
   const [currentProgress, setCurrentProgress] = useState(0);
+  const [_error, _setError] = useState({
+    text: "",
+    show: false,
+  });
+  const [canUpload, setCanUpload] = useState(false);
   const { videoUrl, s3Key } = useUploadVideo({
     video,
+    setVideo,
     activeAccount,
     setCurrentProgress,
+    setIsError,
+    canUpload,
+    _setError,
   });
 
   useEffect(() => {
@@ -80,22 +88,22 @@ const VideoWrapper = ({
     <>
       {confirmPrompt}
       {!!video ? (
-        currentProgress === 100 ? (
-          <Video
-            src={video}
-            maxDuration={VIDEO_MAX_DURATION_SECONDS}
-            setIsError={(value) => setErrors({ ...errors, video: value })}
-            clickHandler={handleVideoRemove}
-          />
-        ) : (
-          <ProgressBar progress={currentProgress} maxProgress={100} />
-        )
+        <Video
+          src={video}
+          maxDuration={VIDEO_MAX_DURATION_SECONDS}
+          setIsError={setIsError}
+          clickHandler={handleVideoRemove}
+          currentProgress={currentProgress}
+          onLoadedMetadata={() => setCanUpload(true)}
+        />
       ) : (
         <Upload
           text="Click or Drag a video to upload (required)"
           accept={["video/mp4"]}
-          setIsError={(value) => setErrors({ ...errors, video: value })}
+          setIsError={setIsError}
           setFile={setVideo}
+          errorShow={_error.show}
+          errorText={_error.text}
         />
       )}
     </>

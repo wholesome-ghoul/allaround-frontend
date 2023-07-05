@@ -235,8 +235,8 @@ const YoutubeUpload = () => {
             signedUrl={videoUrl}
             setVideoUrl={setVideoUrl}
             setVideoS3Key={setVideoS3Key}
-            setErrors={setErrors}
-            errors={errors}
+            setIsError={(value) => setErrors({ ...errors, video: value })}
+            isError={errors.video}
             activeAccount={activeAccount}
             cachedS3Key={videoS3Key}
           />
