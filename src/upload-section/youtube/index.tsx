@@ -24,10 +24,14 @@ import VideoWrapper from "./VideoWrapper";
 import savePost from "./save-post";
 import removeVideoFromS3 from "./remove-video-from-s3";
 
-const { useIndexedDb, useLocalStorage, useEventListener } = hooks;
+const { useIndexedDb, useLocalStorage, useEventListener, useNotification } =
+  hooks;
 
 const YoutubeUpload = () => {
   const navigate = useNavigate();
+  const { push: pushNotification, container: Notifications } = useNotification({
+    position: "bottom",
+  });
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -166,7 +170,7 @@ const YoutubeUpload = () => {
   }, []);
 
   const handleUpload = async () => {
-    if (!uploadGaurdsPassed) return;
+    if (!uploadGaurdsPassed({ errors, video: videoUrl, title })) return;
 
     const snippet = {
       title,
@@ -194,11 +198,28 @@ const YoutubeUpload = () => {
       credentials: "include",
     });
 
-    console.log(response.data);
+    if (response.success) {
+      navigate("/");
+    }
+  };
+
+  const copyCallback = () => {
+    const heading = "Copied to clipboard";
+    const variant: "success" = "success";
+    const withTimer = true;
+
+    const notification = {
+      heading,
+      variant,
+      withTimer,
+    };
+
+    pushNotification("copy", notification);
   };
 
   return (
     <Container grid={{ rows: "auto", cols: 12 }} styles={{ height: "unset" }}>
+      <Notifications />
       <Container
         grid={[
           { bp: 0, cols: 1, rows: "auto", gap: "30px" },
@@ -270,6 +291,7 @@ const YoutubeUpload = () => {
           initialTags={tags}
           isError={errors.tags}
           setIsError={(value) => setErrors({ ...errors, tags: value })}
+          copyCallback={copyCallback}
           gridPosition={[
             { bp: 0, colPos: 1, rowPos: 4 },
             { bp: theme.bp.px.md2, colPos: "1/8", rowPos: "7/8" },

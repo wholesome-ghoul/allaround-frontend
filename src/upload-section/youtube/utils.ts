@@ -4,7 +4,7 @@ const thereIsAnError = (errors: { [key: string]: boolean }) => {
 
 type UploadGuardsPassed = {
   errors: { [key: string]: boolean };
-  video: File | null;
+  video: File | string | null;
   title: string;
 };
 
