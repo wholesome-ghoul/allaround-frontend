@@ -47,14 +47,14 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    const tryResetPassword = await postRequest(
-      `${process.env.SERVER}/api/users/reset-password`,
-      {
+    const tryResetPassword = await postRequest({
+      url: `${process.env.SERVER}/api/users/reset-password`,
+      body: {
         email,
         url: `${process.env.URL}/reset-password`,
       },
-      200
-    );
+      expectedStatus: 200,
+    });
 
     if (!tryResetPassword.success) {
       const text = tryResetPassword.data.error ?? "Oops, something went wrong";

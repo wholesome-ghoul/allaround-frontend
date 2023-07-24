@@ -1,162 +1,55 @@
-import {
-  Navbar,
-  Sidebar,
-  Icons,
-  Button,
-  Text,
-  Container,
-  hooks,
-} from "@allaround/all-components";
-import { useEffect, useRef, useState } from "react";
+import { Container, hooks } from "@allaround/all-components";
+import { useRef } from "react";
 
 import { theme } from "../utils";
+import type { AccountType } from "../utils";
+import Bar from "./Bar";
+import Context from "../context";
 
-const { useResizeObserver, useEventListener } = hooks;
+const { useLocalStorage } = hooks;
 
 type Props = {
   children?: React.ReactNode;
 };
 
+type MinAccountType = Pick<AccountType, "id" | "name" | "avatar" | "socials">;
+
 const HomeBar = ({ children }: Props) => {
-  const [needNavbar, setIsNavbar] = useState(true);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const navbarContainerRef = useRef<HTMLDivElement>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [activeAccount, _setActiveAccount] =
+    useLocalStorage<MinAccountType | null>("activeAccount", null);
 
-  useResizeObserver(document.body, (_entries: any) => {
-    if (window.innerWidth < theme.bp.nums.md2) {
-      setIsNavbar(true);
-    } else {
-      setIsNavbar(false);
-      setIsSidebarOpen(false);
-    }
-  });
-
-  useEventListener(
-    "mousedown",
-    (event: any) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setIsSidebarOpen(false);
-      }
-    },
-    document
-  );
-
-  const openSidebar = () => {
-    setIsSidebarOpen(true);
+  const setActiveAccount = (account: MinAccountType | null) => {
+    _setActiveAccount({
+      id: account?.id ?? null,
+      name: account?.name ?? null,
+      avatar: account?.avatar ?? null,
+      socials: account?.socials ?? null,
+    });
   };
 
-  useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = "hidden";
-      if (navbarContainerRef.current)
-        navbarContainerRef.current.style.opacity = "0.3";
-    } else {
-      document.body.style.overflow = "visible";
-      if (navbarContainerRef.current)
-        navbarContainerRef.current.style.opacity = "1";
-    }
-  }, [isSidebarOpen]);
-
   return (
-    <>
-      {needNavbar ? (
-        <>
-          <Container
-            grid={{
-              cols: 1,
-              rows: "auto",
-            }}
-            innerRef={navbarContainerRef}
-          >
-            <Navbar
-              styles={{ padding: "0 1rem" }}
-              grid={{ cols: "repeat(12, 1fr)", rows: 1 }}
-              sticky
-            >
-              <Button
-                onClick={openSidebar}
-                icon={<Icons.HamburgerIcon size="large" />}
-                noBorder
-                transparent
-              />
-              <Button
-                onClick={() => {}}
-                icon={<Icons.DefaultAvatarIcon size="large" />}
-                gridPosition={{ colPos: "12/13" }}
-                noBorder
-                transparent
-              />
-            </Navbar>
-
-            <Container
-              noGrid
-              gridPosition={{ colPos: "1/13" }}
-              styles={{ height: "1200px" }}
-            >
-              {children}
-            </Container>
-          </Container>
-
-          <Container
-            noGrid
-            styles={{
-              position: "absolute",
-              top: "0",
-              left: "0",
-              width: "100%",
-              height: "100%",
-              zIndex: 100,
-              transition: "transform 0.3s ease",
-              transform: isSidebarOpen ? "translateX(0)" : "translateX(-100%)",
-            }}
-          >
-            <Sidebar
-              innerRef={sidebarRef}
-              overlap
-              styles={{ justifyItems: "left" }}
-            >
-              <Button
-                onClick={() => {}}
-                icon={<Icons.SunIcon size="large" />}
-                gridPosition={{ rowPos: "3/4" }}
-                transparent
-                noBorder
-              >
-                <Text size="medium">Change Theme</Text>
-              </Button>
-            </Sidebar>
-          </Container>
-        </>
-      ) : (
+    <Container
+      grid={[
+        { bp: 0, cols: 1, rows: "auto" },
+        {
+          bp: theme.bp.px.md2,
+          cols: "minmax(72px, auto) repeat(7, minmax(0px, 1fr))",
+          rows: 1,
+        },
+      ]}
+    >
+      <Context.Account.Provider value={{ activeAccount, setActiveAccount }}>
+        <Bar contentRef={contentRef} />
         <Container
-          grid={{
-            rows: 1,
-            cols: "minmax(72px, auto) repeat(7, minmax(0px, 1fr))",
-          }}
+          noGrid
+          innerRef={contentRef}
+          gridPosition={[{ bp: theme.bp.px.md2, colPos: "2/9" }]}
         >
-          <Sidebar sticky>
-            <Button
-              onClick={() => {}}
-              icon={<Icons.AaIcon size="xlarge" />}
-              noBorder
-              transparent
-            ></Button>
-            <Button
-              onClick={() => {}}
-              icon={<Icons.SunIcon size="medium" />}
-              gridPosition={{ rowPos: "3/4" }}
-              transparent
-              noBorder
-            ></Button>
-          </Sidebar>
-
-          <Container noGrid gridPosition={{ colPos: "2/9" }}>
-            {children}
-          </Container>
+          {children}
         </Container>
-      )}
-    </>
+      </Context.Account.Provider>
+    </Container>
   );
 };
 

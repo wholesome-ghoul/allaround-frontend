@@ -30,7 +30,7 @@ type SignUpUser = {
   password: string;
 };
 
-type PostBody = UnkownData | SignUpUser;
+type PostBody = UnkownData | SignUpUser | FormData;
 type PutBody = PostBody;
 
 type DisplayError = {
@@ -47,6 +47,28 @@ type Credentials_ActionType =
   | { type: "set_email_error"; emailError: DisplayError }
   | { type: "set_error"; error: DisplayError };
 
+type Social = {
+  name: string;
+  enabled: boolean;
+  value: string;
+  icon: string;
+};
+
+type AccountType = {
+  name: string;
+  socials: Social[];
+  avatar: string;
+  users: string[];
+  admin: string;
+  permissions: string[];
+  id: string;
+};
+
+type AccountContextData = {
+  activeAccount: AccountType | null;
+  setActiveAccount: (account: AccountType | null) => void;
+};
+
 export type {
   ServerResponse,
   ServerError,
@@ -57,4 +79,7 @@ export type {
   DisplayError,
   Credentials_ActionType,
   PutBody,
+  Social,
+  AccountType,
+  AccountContextData,
 };
