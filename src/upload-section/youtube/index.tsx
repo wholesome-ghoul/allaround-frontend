@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   Container,
   Textarea,
@@ -12,17 +12,19 @@ import {
   Switch,
   hooks,
 } from "@allaround/all-components";
+import type { OptionProps } from "@allaround/all-components/select";
 import { useNavigate } from "react-router-dom";
 
-import { postRequest, theme } from "../../utils";
+import { postRequest, routes, theme } from "../../utils";
 import Context from "../../context";
 import { Status } from "./types";
-import type { Errors, Option } from "./types";
+import type { Errors } from "./types";
 import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
 import VideoWrapper from "./VideoWrapper";
 import savePost from "./save-post";
 import removeVideoFromS3 from "./remove-video-from-s3";
+import getFirstFrameOfVideo from "./get-first-frame-of-video";
 
 const { useIndexedDb, useLocalStorage, useEventListener, useNotification } =
   hooks;
@@ -35,8 +37,11 @@ const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [category, setCategory] = useState<Option>({ value: "", label: "" });
-  const [privacy, setPrivacy] = useState<Option>({
+  const [category, setCategory] = useState<OptionProps>({
+    value: "",
+    label: "",
+  });
+  const [privacy, setPrivacy] = useState<OptionProps>({
     value: "public",
     label: "Public",
   });
@@ -64,8 +69,35 @@ const YoutubeUpload = () => {
     thumbnail: false,
     video: false,
   });
+  const videoRef = useRef<HTMLVideoElement>(null);
   const saveDraftPost = useCallback(async () => {
     if (!videoUrl) return;
+
+    let thumbnailUrl = "";
+    const formData = new FormData();
+    if (!thumbnail && videoRef.current) {
+      const firstFrame = await getFirstFrameOfVideo(videoRef.current);
+
+      const file = new File([firstFrame as Blob], "thumbnail.jpeg", {
+        type: "image/jpeg",
+      });
+      formData.append("file", file);
+    } else {
+      formData.append("file", thumbnail as File);
+    }
+
+    const response = await postRequest({
+      url: `${process.env.SERVER}/aws/s3/upload/yt-thumbnail?accountId=${activeAccount?.id}`,
+      body: formData,
+      credentials: "include",
+      formData: true,
+    });
+
+    if (response.success) {
+      thumbnailUrl = response.data.url as string;
+    } else {
+      console.log(response.data.error);
+    }
 
     const savedPost = await savePost({
       videoUrl,
@@ -74,7 +106,7 @@ const YoutubeUpload = () => {
       tags,
       notifySubscribers,
       s3Key: videoS3Key,
-      thumbnailUrl: "",
+      thumbnailUrl,
       categoryId: Number(category.value),
       privacy: privacy.value.toString(),
       publishAt: null,
@@ -84,7 +116,7 @@ const YoutubeUpload = () => {
 
     if (savedPost.success) {
       setLocalCache(null);
-      navigate("/");
+      navigate(routes.posts);
     } else {
       console.log(savedPost.data.error);
     }
@@ -98,7 +130,7 @@ const YoutubeUpload = () => {
     category,
     privacy,
     activeAccount,
-    // thumbnailUrl,
+    thumbnail,
   ]);
 
   useFetchVideoCategories({
@@ -250,6 +282,7 @@ const YoutubeUpload = () => {
             setIsError={(value) => setErrors({ ...errors, video: value })}
             activeAccount={activeAccount}
             cachedS3Key={videoS3Key}
+            videoRef={videoRef}
           />
         </Container>
 
@@ -317,7 +350,7 @@ const YoutubeUpload = () => {
             <Upload
               text="Upload thumbnail (optional)"
               accept={["image/png", "image/jpg", "image/jpeg"]}
-              maxSize={100 * 1024 * 1024}
+              maxSize={2 * 1024 * 1024}
               setIsError={(value) => setErrors({ ...errors, thumbnail: value })}
               setFile={setThumbnail}
             />

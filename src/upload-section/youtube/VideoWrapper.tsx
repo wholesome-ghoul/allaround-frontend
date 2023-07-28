@@ -17,6 +17,7 @@ type Props = {
   setIsError: (value: boolean) => void;
   activeAccount: AccountType | null;
   cachedS3Key?: string;
+  videoRef: React.RefObject<HTMLVideoElement>;
 };
 
 const VideoWrapper = ({
@@ -26,6 +27,7 @@ const VideoWrapper = ({
   setVideoS3Key,
   activeAccount,
   cachedS3Key,
+  videoRef,
 }: Props) => {
   const [video, setVideo] = useState<File | null>(null);
   const [currentProgress, setCurrentProgress] = useState(0);
@@ -94,6 +96,7 @@ const VideoWrapper = ({
           clickHandler={handleVideoRemove}
           currentProgress={currentProgress}
           onLoadedMetadata={() => setCanUpload(true)}
+          ref={videoRef}
         />
       ) : (
         <Upload

@@ -1,3 +1,5 @@
+import constants from "./constants"
+
 type Validator = {
   [key: string]: {
     valid: boolean;
@@ -69,6 +71,14 @@ type AccountContextData = {
   setActiveAccount: (account: AccountType | null) => void;
 };
 
+enum PostType {
+  DRAFT = "draft",
+  SCHEDULED = "scheduled",
+  PUBLISHED = "published",
+  PAUSED = "paused",
+  PUBLISHING = "publishing",
+}
+
 export type {
   ServerResponse,
   ServerError,
@@ -83,3 +93,5 @@ export type {
   AccountType,
   AccountContextData,
 };
+
+export { PostType };

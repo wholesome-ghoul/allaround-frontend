@@ -8,6 +8,7 @@ const routes = {
     root: "/create",
     youtubePost: "/create/youtube-post",
   },
+  posts: "/posts",
 };
 
 export default routes;
