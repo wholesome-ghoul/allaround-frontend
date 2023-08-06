@@ -1,12 +1,10 @@
 import { Checkbox, Dropdown } from "@allaround/all-components";
 
-import { constants, getRequest } from "../utils";
+import { POST_TYPE, constants, getRequest } from "../utils";
 import type { PostSchema } from "./types";
 import Post from "./Post";
 
 let cache = new Map();
-
-type POST_TYPE = (typeof constants.POST_TYPES)[number];
 
 function fetchData(accountId: string, postType: POST_TYPE) {
   if (!cache.has(postType)) {

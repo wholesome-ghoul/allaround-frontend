@@ -63,6 +63,7 @@ type AccountType = {
   users: string[];
   admin: string;
   permissions: string[];
+  totalPosts: {[key in POST_TYPE]: number};
   id: string;
 };
 
@@ -79,6 +80,8 @@ enum PostType {
   PUBLISHING = "publishing",
 }
 
+type POST_TYPE = typeof constants.POST_TYPES[number]
+
 export type {
   ServerResponse,
   ServerError,
@@ -92,6 +95,7 @@ export type {
   Social,
   AccountType,
   AccountContextData,
+  POST_TYPE
 };
 
 export { PostType };

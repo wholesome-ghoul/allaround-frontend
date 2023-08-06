@@ -38,6 +38,7 @@ export { default as theme } from "./theme";
 export { default as validators } from "./validators";
 export { default as routes } from "./routes";
 export { default as getSignedUrl } from "./get-signed-url";
+export { default as removeVideoFromS3 } from "./remove-video-from-s3";
 
 export * from "./types";
 export * as types from "./types";

@@ -1,8 +1,10 @@
 import { Container } from "@allaround/all-components";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 
 import { theme } from "../utils";
 import Bar from "./Bar";
+import { useClearPostCache } from "../hooks";
+import Context from "../context";
 
 type Props = {
   children?: React.ReactNode;
@@ -10,6 +12,8 @@ type Props = {
 
 const HomeBar = ({ children }: Props) => {
   const contentRef = useRef<HTMLDivElement>(null);
+  const { activeAccount } = useContext(Context.Account);
+  useClearPostCache({ activeAccountId: activeAccount?.id ?? "" });
 
   return (
     <Container

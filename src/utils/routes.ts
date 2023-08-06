@@ -5,7 +5,6 @@ const routes = {
   signUp: "/sign-up",
   resetPassword: "/reset-password",
   create: {
-    root: "/create",
     youtubePost: "/create/youtube-post",
   },
   posts: "/posts",

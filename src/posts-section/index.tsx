@@ -1,22 +1,59 @@
-import { Suspense, lazy, useContext, useEffect, useState } from "react";
-import {
-  Container,
-  Heading,
-  Dropdown,
-  Checkbox,
-} from "@allaround/all-components";
-
-import _Posts from "./Posts";
+import { useContext, useEffect, useState } from "react";
+import { Container, Heading } from "@allaround/all-components";
 
 import Context from "../context";
-import PostPlaceholder from "./PostPlaceholders";
-import { nTimes } from "../utils";
+import Section from "./Section";
+import { AccountType, constants, getRequest } from "../utils";
 
 const Posts = () => {
   const [isPublishedOpen, setIsPublishedOpen] = useState(false);
   const [isScheduledOpen, setIsScheduledOpen] = useState(false);
   const [isDraftOpen, setIsDraftOpen] = useState(false);
   const { activeAccount } = useContext(Context.Account);
+  const [totalPosts, setTotalPosts] = useState<
+    AccountType["totalPosts"] | undefined
+  >(activeAccount?.totalPosts);
+
+  useEffect(() => {
+    const getTotalPosts = async () => {
+      console.log("activeAccount", activeAccount);
+      const response = await getRequest({
+        url: `${process.env.SERVER}/api/posts/total`,
+        query: {
+          accountId: activeAccount?.id ?? "",
+        },
+        credentials: "include",
+      });
+
+      if (response.success) {
+        const { draft, published, publishing, scheduled } = response.data
+          .totalPosts as AccountType["totalPosts"];
+
+        setTotalPosts(() => {
+          return {
+            draft:
+              draft > constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                ? constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                : draft,
+            published:
+              published > constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                ? constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                : published,
+            publishing:
+              publishing > constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                ? constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                : publishing,
+            scheduled:
+              scheduled > constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                ? constants.MAX_NUMBER_OF_POST_PLACEHOLDERS
+                : scheduled,
+          };
+        });
+      }
+    };
+
+    getTotalPosts();
+  }, [activeAccount]);
 
   return (
     <Container
@@ -31,128 +68,32 @@ const Posts = () => {
       <Container noGrid>Filter</Container>
 
       <Container noGrid>
-        <Dropdown
+        <Section
           text="Published"
+          postType="published"
+          accountId={activeAccount?.id ?? ""}
           isOpen={isPublishedOpen}
           setIsOpen={setIsPublishedOpen}
-          styles={{ minWidth: "240px" }}
-          paddedItemContainer={false}
-          variant="secondary"
-          dropperSize="large"
-          arrowDirection="right"
-          marginedItem
-          enableArrow
-          arrowOnLeft
-          textOnLeft
-          fill
-          oneline
-          ellipsis
-          noDropperBorder
-          marginedItems
-        >
-          <Suspense
-            fallback={nTimes(5)(
-              <Dropdown.Item
-                borders={{ top: true }}
-                styles={{
-                  padding: "16px 0",
-                }}
-              >
-                <Checkbox
-                  onChange={() => {}}
-                  styles={{
-                    alignItems: "flex-start",
-                  }}
-                />
-                <PostPlaceholder />
-              </Dropdown.Item>
-            )}
-          >
-            <_Posts accountId={activeAccount?.id ?? ""} postType="published" />
-          </Suspense>
-        </Dropdown>
+          nPlaceholders={totalPosts?.published}
+        />
 
-        <Dropdown
+        <Section
           text="Scheduled"
+          postType="scheduled"
+          accountId={activeAccount?.id ?? ""}
           isOpen={isScheduledOpen}
           setIsOpen={setIsScheduledOpen}
-          styles={{ minWidth: "240px" }}
-          paddedItemContainer={false}
-          variant="secondary"
-          dropperSize="large"
-          arrowDirection="right"
-          marginedItem
-          enableArrow
-          arrowOnLeft
-          textOnLeft
-          fill
-          oneline
-          ellipsis
-          noDropperBorder
-          marginedItems
-        >
-          <Suspense
-            fallback={nTimes(5)(
-              <Dropdown.Item
-                borders={{ top: true }}
-                styles={{
-                  padding: "16px 0",
-                }}
-              >
-                <Checkbox
-                  onChange={() => {}}
-                  styles={{
-                    alignItems: "flex-start",
-                  }}
-                />
-                <PostPlaceholder />
-              </Dropdown.Item>
-            )}
-          >
-            <_Posts accountId={activeAccount?.id ?? ""} postType="scheduled" />
-          </Suspense>
-        </Dropdown>
+          nPlaceholders={totalPosts?.scheduled}
+        />
 
-        <Dropdown
+        <Section
           text="Draft"
+          postType="draft"
+          accountId={activeAccount?.id ?? ""}
           isOpen={isDraftOpen}
           setIsOpen={setIsDraftOpen}
-          styles={{ minWidth: "240px" }}
-          paddedItemContainer={false}
-          variant="secondary"
-          dropperSize="large"
-          arrowDirection="right"
-          marginedItem
-          enableArrow
-          arrowOnLeft
-          textOnLeft
-          fill
-          oneline
-          ellipsis
-          noDropperBorder
-          marginedItems
-        >
-          <Suspense
-            fallback={nTimes(5)(
-              <Dropdown.Item
-                borders={{ top: true }}
-                styles={{
-                  padding: "16px 0",
-                }}
-              >
-                <Checkbox
-                  onChange={() => {}}
-                  styles={{
-                    alignItems: "flex-start",
-                  }}
-                />
-                <PostPlaceholder />
-              </Dropdown.Item>
-            )}
-          >
-            <_Posts accountId={activeAccount?.id ?? ""} postType="draft" />
-          </Suspense>
-        </Dropdown>
+          nPlaceholders={totalPosts?.draft}
+        />
       </Container>
     </Container>
   );

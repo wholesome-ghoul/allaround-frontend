@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Upload, Video, hooks } from "@allaround/all-components";
 
 import useUploadVideo from "./use-upload-video";
-import { AccountType, getSignedUrl } from "../../utils";
-import removeVideoFromS3 from "./remove-video-from-s3";
+import { AccountType, getSignedUrl, removeVideoFromS3 } from "../../utils";
 
 const VIDEO_MAX_DURATION_SECONDS = 60 * 60; // 1 hour
 const VIDEO_MAX_SIZE = 1024 * 1024 * 1024 * 20; // 20GB

@@ -1,4 +1,4 @@
-import { deleteRequest } from "../../utils";
+import deleteRequest from "./delete-request";
 
 type Props = {
   Key?: string | null;

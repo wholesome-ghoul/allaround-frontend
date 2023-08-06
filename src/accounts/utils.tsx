@@ -39,7 +39,7 @@ const getSocials = (acc: any) => {
   return socials;
 };
 
-const getAccount = (acc: any) => {
+const getAccount = (acc: AccountType) => {
   return {
     name: acc.name,
     avatar: acc.avatar,
@@ -48,6 +48,7 @@ const getAccount = (acc: any) => {
     permissions: acc.permissions,
     admin: acc.admin,
     socials: getSocials(acc),
+    totalPosts: acc.totalPosts,
   };
 };
 

@@ -22,7 +22,9 @@ type GuardedRouteProps = {
   pass?: boolean;
 };
 
-type MinAccountType = Pick<AccountType, "id" | "name" | "avatar" | "socials">;
+type MinAccountType = Partial<
+  Pick<AccountType, "id" | "name" | "avatar" | "socials" | "totalPosts">
+>;
 
 const GuardedRoute = ({
   children,
@@ -40,18 +42,32 @@ const GuardedRoute = ({
   return <Navigate to={routes.signIn} />;
 };
 
+const INITIAL_ACCOUNT: MinAccountType = {
+  id: undefined,
+  name: undefined,
+  avatar: undefined,
+  socials: undefined,
+  totalPosts: undefined,
+};
+
 const App = () => {
   const { isSignedIn, setIsSignedIn } = useIsUserSignedIn();
-  const [activeAccount, _setActiveAccount] =
-    useLocalStorage<MinAccountType | null>("activeAccount", null);
+  const [activeAccount, _setActiveAccount] = useLocalStorage<MinAccountType>(
+    "activeAccount",
+    INITIAL_ACCOUNT
+  );
+
+  // const setActiveAccount = (account: MinAccountType | null) => {
+  //   _setActiveAccount((prev: MinAccountType | null) => {
+  //     return {
+  //       ...prev,
+  //       ...account,
+  //     };
+  //   });
+  // };
 
   const setActiveAccount = (account: MinAccountType | null) => {
-    _setActiveAccount({
-      id: account?.id ?? null,
-      name: account?.name ?? null,
-      avatar: account?.avatar ?? null,
-      socials: account?.socials ?? null,
-    });
+    _setActiveAccount(account);
   };
 
   return (

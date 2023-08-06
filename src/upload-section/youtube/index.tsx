@@ -15,7 +15,13 @@ import {
 import type { OptionProps } from "@allaround/all-components/select";
 import { useNavigate } from "react-router-dom";
 
-import { postRequest, routes, theme } from "../../utils";
+import {
+  constants,
+  postRequest,
+  removeVideoFromS3,
+  routes,
+  theme,
+} from "../../utils";
 import Context from "../../context";
 import { Status } from "./types";
 import type { Errors } from "./types";
@@ -23,7 +29,6 @@ import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
 import VideoWrapper from "./VideoWrapper";
 import savePost from "./save-post";
-import removeVideoFromS3 from "./remove-video-from-s3";
 import getFirstFrameOfVideo from "./get-first-frame-of-video";
 
 const { useIndexedDb, useLocalStorage, useEventListener, useNotification } =
@@ -61,7 +66,7 @@ const YoutubeUpload = () => {
     version: 1,
     store: { name: "value", keyPath: "value" },
   });
-  const [localCache, setLocalCache] = useLocalStorage("youtubeUpload");
+  const [localCache, setLocalCache] = useLocalStorage(constants.POST_CACHE_KEY);
   const [errors, setErrors] = useState<Errors>({
     title: false,
     description: false,
@@ -115,7 +120,6 @@ const YoutubeUpload = () => {
     });
 
     if (savedPost.success) {
-      setLocalCache(null);
       navigate(routes.posts);
     } else {
       console.log(savedPost.data.error);
@@ -141,10 +145,27 @@ const YoutubeUpload = () => {
     isVideoCategoriesFetched,
   });
 
+  useEffect(() => {
+    const cache: { [key: string]: any } = {
+      service: "youtube",
+      videoS3Key,
+    };
+
+    setLocalCache((prevCache: any) => {
+      const newCache = {
+        ...prevCache,
+        ...cache,
+      };
+
+      return newCache;
+    });
+  }, [videoS3Key]);
+
   useEventListener(
     "beforeunload",
     async (event: any) => {
       const cache: { [key: string]: any } = {
+        service: "youtube",
         date,
         title,
         description,
@@ -156,12 +177,23 @@ const YoutubeUpload = () => {
         videoS3Key,
       };
 
-      setLocalCache(JSON.stringify(cache));
+      setLocalCache(cache);
 
       event.preventDefault();
       event.returnValue = "";
     },
-    window
+    window,
+    [
+      date,
+      title,
+      description,
+      tags,
+      category,
+      privacy,
+      notifySubscribers,
+      enableScheduling,
+      videoS3Key,
+    ]
   );
 
   useEffect(() => {
@@ -176,7 +208,7 @@ const YoutubeUpload = () => {
     if (!localCache) return;
 
     const handleCache = async () => {
-      const cache = JSON.parse(localCache);
+      const cache = localCache;
 
       setTitle(cache.title || "");
       setDescription(cache.description || "");
@@ -201,7 +233,7 @@ const YoutubeUpload = () => {
     handleCache();
   }, []);
 
-  const handleUpload = async () => {
+  const handlePublish = async () => {
     if (!uploadGaurdsPassed({ errors, video: videoUrl, title })) return;
 
     const snippet = {
@@ -231,7 +263,7 @@ const YoutubeUpload = () => {
     });
 
     if (response.success) {
-      navigate("/");
+      navigate(routes.posts);
     }
   };
 
@@ -445,7 +477,7 @@ const YoutubeUpload = () => {
           noGrid
           flex
         >
-          <Button onClick={handleUpload} fill>
+          <Button onClick={handlePublish} fill>
             Publish
           </Button>
           <Button onClick={saveDraftPost} variant="tertiary" fill>
