@@ -11,7 +11,7 @@ const PostMapper = {
 
 const Post = ({ post }: Props) => {
   const PostComponent = PostMapper[post.serviceName];
-  return <PostComponent post={post[post.serviceName]} />;
+  return <PostComponent post={post[post.serviceName]} parentPostId={post.id} />;
 };
 
 export default Post;

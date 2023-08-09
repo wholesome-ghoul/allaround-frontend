@@ -55,7 +55,7 @@ const YoutubeUpload = () => {
   const [videoS3Key, setVideoS3Key] = useState<string>("");
   const [date, setDate] = useState<Date | number>(Date.now());
   const [enableScheduling, setEnableScheduling] = useState(false);
-  const [notifySubscribers, setNotifySubscribers] = useState(false);
+  const [notifySubscribers, setNotifySubscribers] = useState(true);
   const { activeAccount } = useContext(Context.Account);
   const {
     setDbValues: setVideoCategories,
@@ -234,41 +234,19 @@ const YoutubeUpload = () => {
     handleCache();
   }, []);
 
+  useEffect(() => {
+    if (enableScheduling) {
+      setPrivacy({ value: "private", label: "Private" });
+    }
+  }, [enableScheduling]);
+
   const handlePublish = async () => {
     if (!uploadGaurdsPassed({ errors, videoUrl, title, videoS3Key })) return;
 
-    // const snippet = {
-    //   title,
-    //   description,
-    //   tags,
-    //   categoryId: category.value,
-    // };
-
-    // const status = {
-    //   privacyStatus: privacy.value,
-    // };
-
-    // const body = {
-    //   accountId: activeAccount?.id,
-    //   publishAt: enableScheduling ? new Date(date).toISOString() : null,
-    //   Key: videoS3Key,
-    //   thumbnail,
-    //   notifySubscribers,
-    //   snippet,
-    //   status,
-    // };
-
-    // const response = await postRequest({
-    //   url: `${process.env.SERVER}/api/service/google/youtube/upload/video`,
-    //   body,
-    //   credentials: "include",
-    // });
-
-    // if (response.success) {
     let thumbnailUrl = "";
     const formData = new FormData();
     if (!thumbnail && videoRef.current) {
-      const firstFrame = await getFirstFrameOfVideo(videoRef.current);
+      const firstFrame = await getFirstFrameOfVideo(videoRef.current as any);
 
       const file = new File([firstFrame as Blob], "thumbnail.jpeg", {
         type: "image/jpeg",
@@ -291,19 +269,22 @@ const YoutubeUpload = () => {
       console.log(response.data.error);
     }
 
+    const publishAt = enableScheduling ? date : null;
+    const status = enableScheduling ? Status.SCHEDULED : Status.PUBLISHING;
+
     const savedPost = await savePost({
       videoUrl: videoUrl as string,
+      s3Key: videoS3Key,
+      categoryId: Number(category.value),
+      privacy: privacy.value.toString(),
+      accountId: activeAccount?.id,
       title,
       description,
       tags,
       notifySubscribers,
-      s3Key: videoS3Key,
       thumbnailUrl,
-      categoryId: Number(category.value),
-      privacy: privacy.value.toString(),
-      publishAt: null,
-      accountId: activeAccount?.id,
-      status: Status.PUBLISHING,
+      publishAt,
+      status,
     });
 
     if (savedPost.success) {
@@ -312,7 +293,6 @@ const YoutubeUpload = () => {
     } else {
       console.log(savedPost.data.error);
     }
-    // }
   };
 
   const copyCallback = () => {
@@ -475,6 +455,7 @@ const YoutubeUpload = () => {
                 { label: "Private", value: "private" },
                 { label: "Unlisted", value: "unlisted" },
               ]}
+              disabled={enableScheduling}
               fill
             />
           </Container>
@@ -526,7 +507,7 @@ const YoutubeUpload = () => {
           flex
         >
           <Button onClick={handlePublish} fill>
-            Publish
+            {enableScheduling ? "Schedule" : "Publish"}
           </Button>
           <Button onClick={saveDraftPost} variant="tertiary" fill>
             Save as Draft

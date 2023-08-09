@@ -45,12 +45,6 @@ const Posts = ({ accountId, postType, changedPosts }: Props) => {
             padding: "16px 0",
           }}
         >
-          <Checkbox
-            onChange={() => {}}
-            styles={{
-              alignItems: "flex-start",
-            }}
-          />
           <Post post={post} />
         </Dropdown.Item>
       ))}
