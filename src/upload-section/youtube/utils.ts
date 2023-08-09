@@ -4,16 +4,16 @@ const thereIsAnError = (errors: { [key: string]: boolean }) => {
 
 type UploadGuardsPassed = {
   errors: { [key: string]: boolean };
-  video: File | string | null;
   title: string;
+  videoUrl: string | null;
+  videoS3Key: string;
 };
 
-const uploadGaurdsPassed = ({ errors, video, title }: UploadGuardsPassed) => {
-  if (thereIsAnError(errors)) return false;
-
-  if (video === null) return false;
-
-  if (title === "") return false;
+const uploadGaurdsPassed = ({ errors, title, videoUrl, videoS3Key }: UploadGuardsPassed) => {
+  if (thereIsAnError(errors) ||
+  title === "" ||
+  videoUrl === null ||
+  videoS3Key === "") return false;
 
   return true;
 };

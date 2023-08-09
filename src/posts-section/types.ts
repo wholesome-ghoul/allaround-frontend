@@ -1,4 +1,4 @@
-import { constants } from "../utils";
+import { POST_TYPE, constants } from "../utils";
 
 type Services = "youtube";
 
@@ -19,4 +19,11 @@ export type Youtube = {
 export type PostSchema = {
   serviceName: Services;
   youtube: Youtube;
+  id: string;
+  status: POST_TYPE;
+};
+
+export type ChangedPostType = {
+  id: string | null;
+  newState: POST_TYPE;
 };

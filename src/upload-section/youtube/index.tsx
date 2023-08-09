@@ -120,6 +120,7 @@ const YoutubeUpload = () => {
     });
 
     if (savedPost.success) {
+      setLocalCache(null);
       navigate(routes.posts);
     } else {
       console.log(savedPost.data.error);
@@ -234,37 +235,84 @@ const YoutubeUpload = () => {
   }, []);
 
   const handlePublish = async () => {
-    if (!uploadGaurdsPassed({ errors, video: videoUrl, title })) return;
+    if (!uploadGaurdsPassed({ errors, videoUrl, title, videoS3Key })) return;
 
-    const snippet = {
-      title,
-      description,
-      tags,
-      categoryId: category.value,
-    };
+    // const snippet = {
+    //   title,
+    //   description,
+    //   tags,
+    //   categoryId: category.value,
+    // };
 
-    const status = {
-      privacyStatus: privacy.value,
-    };
+    // const status = {
+    //   privacyStatus: privacy.value,
+    // };
 
-    const body = {
-      accountId: activeAccount?.id,
-      publishAt: enableScheduling ? new Date(date).toISOString() : null,
-      thumbnail: thumbnail ? thumbnail : null,
-      notifySubscribers,
-      snippet,
-      status,
-    };
+    // const body = {
+    //   accountId: activeAccount?.id,
+    //   publishAt: enableScheduling ? new Date(date).toISOString() : null,
+    //   Key: videoS3Key,
+    //   thumbnail,
+    //   notifySubscribers,
+    //   snippet,
+    //   status,
+    // };
+
+    // const response = await postRequest({
+    //   url: `${process.env.SERVER}/api/service/google/youtube/upload/video`,
+    //   body,
+    //   credentials: "include",
+    // });
+
+    // if (response.success) {
+    let thumbnailUrl = "";
+    const formData = new FormData();
+    if (!thumbnail && videoRef.current) {
+      const firstFrame = await getFirstFrameOfVideo(videoRef.current);
+
+      const file = new File([firstFrame as Blob], "thumbnail.jpeg", {
+        type: "image/jpeg",
+      });
+      formData.append("file", file);
+    } else {
+      formData.append("file", thumbnail as File);
+    }
 
     const response = await postRequest({
-      url: `${process.env.SERVER}/api/service/google/youtube/upload/video`,
-      body,
+      url: `${process.env.SERVER}/aws/s3/upload/yt-thumbnail?accountId=${activeAccount?.id}`,
+      body: formData,
       credentials: "include",
+      formData: true,
     });
 
     if (response.success) {
-      navigate(routes.posts);
+      thumbnailUrl = response.data.url as string;
+    } else {
+      console.log(response.data.error);
     }
+
+    const savedPost = await savePost({
+      videoUrl: videoUrl as string,
+      title,
+      description,
+      tags,
+      notifySubscribers,
+      s3Key: videoS3Key,
+      thumbnailUrl,
+      categoryId: Number(category.value),
+      privacy: privacy.value.toString(),
+      publishAt: null,
+      accountId: activeAccount?.id,
+      status: Status.PUBLISHING,
+    });
+
+    if (savedPost.success) {
+      setLocalCache(null);
+      navigate(routes.posts);
+    } else {
+      console.log(savedPost.data.error);
+    }
+    // }
   };
 
   const copyCallback = () => {
