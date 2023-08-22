@@ -9,7 +9,7 @@ type Props = {
   thumbnailUrl: string;
   categoryId: number;
   privacy: string;
-  publishAt: number | null;
+  publishAt: number | Date | null;
   notifySubscribers: boolean;
   status: Status;
   s3Key: string;

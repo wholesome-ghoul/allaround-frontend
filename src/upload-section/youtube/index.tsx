@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import {
   Container,
   Textarea,
@@ -12,17 +12,24 @@ import {
   Switch,
   hooks,
 } from "@allaround/all-components";
+import type { OptionProps } from "@allaround/all-components/select";
 import { useNavigate } from "react-router-dom";
 
-import { postRequest, theme } from "../../utils";
+import {
+  constants,
+  postRequest,
+  removeVideoFromS3,
+  routes,
+  theme,
+} from "../../utils";
 import Context from "../../context";
 import { Status } from "./types";
-import type { Errors, Option } from "./types";
+import type { Errors } from "./types";
 import useFetchVideoCategories from "./use-fetch-video-categories";
 import { uploadGaurdsPassed } from "./utils";
 import VideoWrapper from "./VideoWrapper";
 import savePost from "./save-post";
-import removeVideoFromS3 from "./remove-video-from-s3";
+import getFirstFrameOfVideo from "./get-first-frame-of-video";
 
 const { useIndexedDb, useLocalStorage, useEventListener, useNotification } =
   hooks;
@@ -35,8 +42,11 @@ const YoutubeUpload = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [category, setCategory] = useState<Option>({ value: "", label: "" });
-  const [privacy, setPrivacy] = useState<Option>({
+  const [category, setCategory] = useState<OptionProps>({
+    value: "",
+    label: "",
+  });
+  const [privacy, setPrivacy] = useState<OptionProps>({
     value: "public",
     label: "Public",
   });
@@ -45,7 +55,7 @@ const YoutubeUpload = () => {
   const [videoS3Key, setVideoS3Key] = useState<string>("");
   const [date, setDate] = useState<Date | number>(Date.now());
   const [enableScheduling, setEnableScheduling] = useState(false);
-  const [notifySubscribers, setNotifySubscribers] = useState(false);
+  const [notifySubscribers, setNotifySubscribers] = useState(true);
   const { activeAccount } = useContext(Context.Account);
   const {
     setDbValues: setVideoCategories,
@@ -56,7 +66,7 @@ const YoutubeUpload = () => {
     version: 1,
     store: { name: "value", keyPath: "value" },
   });
-  const [localCache, setLocalCache] = useLocalStorage("youtubeUpload");
+  const [localCache, setLocalCache] = useLocalStorage(constants.POST_CACHE_KEY);
   const [errors, setErrors] = useState<Errors>({
     title: false,
     description: false,
@@ -64,8 +74,35 @@ const YoutubeUpload = () => {
     thumbnail: false,
     video: false,
   });
+  const videoRef = useRef<HTMLVideoElement>(null);
   const saveDraftPost = useCallback(async () => {
     if (!videoUrl) return;
+
+    let thumbnailUrl = "";
+    const formData = new FormData();
+    if (!thumbnail && videoRef.current) {
+      const firstFrame = await getFirstFrameOfVideo(videoRef.current);
+
+      const file = new File([firstFrame as Blob], "thumbnail.jpeg", {
+        type: "image/jpeg",
+      });
+      formData.append("file", file);
+    } else {
+      formData.append("file", thumbnail as File);
+    }
+
+    const response = await postRequest({
+      url: `${process.env.SERVER}/aws/s3/upload/yt-thumbnail?accountId=${activeAccount?.id}`,
+      body: formData,
+      credentials: "include",
+      formData: true,
+    });
+
+    if (response.success) {
+      thumbnailUrl = response.data.url as string;
+    } else {
+      console.log(response.data.error);
+    }
 
     const savedPost = await savePost({
       videoUrl,
@@ -74,7 +111,7 @@ const YoutubeUpload = () => {
       tags,
       notifySubscribers,
       s3Key: videoS3Key,
-      thumbnailUrl: "",
+      thumbnailUrl,
       categoryId: Number(category.value),
       privacy: privacy.value.toString(),
       publishAt: null,
@@ -84,7 +121,7 @@ const YoutubeUpload = () => {
 
     if (savedPost.success) {
       setLocalCache(null);
-      navigate("/");
+      navigate(routes.posts);
     } else {
       console.log(savedPost.data.error);
     }
@@ -98,7 +135,7 @@ const YoutubeUpload = () => {
     category,
     privacy,
     activeAccount,
-    // thumbnailUrl,
+    thumbnail,
   ]);
 
   useFetchVideoCategories({
@@ -109,10 +146,27 @@ const YoutubeUpload = () => {
     isVideoCategoriesFetched,
   });
 
+  useEffect(() => {
+    const cache: { [key: string]: any } = {
+      service: "youtube",
+      videoS3Key,
+    };
+
+    setLocalCache((prevCache: any) => {
+      const newCache = {
+        ...prevCache,
+        ...cache,
+      };
+
+      return newCache;
+    });
+  }, [videoS3Key]);
+
   useEventListener(
     "beforeunload",
     async (event: any) => {
       const cache: { [key: string]: any } = {
+        service: "youtube",
         date,
         title,
         description,
@@ -124,12 +178,23 @@ const YoutubeUpload = () => {
         videoS3Key,
       };
 
-      setLocalCache(JSON.stringify(cache));
+      setLocalCache(cache);
 
       event.preventDefault();
       event.returnValue = "";
     },
-    window
+    window,
+    [
+      date,
+      title,
+      description,
+      tags,
+      category,
+      privacy,
+      notifySubscribers,
+      enableScheduling,
+      videoS3Key,
+    ]
   );
 
   useEffect(() => {
@@ -144,7 +209,7 @@ const YoutubeUpload = () => {
     if (!localCache) return;
 
     const handleCache = async () => {
-      const cache = JSON.parse(localCache);
+      const cache = localCache;
 
       setTitle(cache.title || "");
       setDescription(cache.description || "");
@@ -169,37 +234,64 @@ const YoutubeUpload = () => {
     handleCache();
   }, []);
 
-  const handleUpload = async () => {
-    if (!uploadGaurdsPassed({ errors, video: videoUrl, title })) return;
+  useEffect(() => {
+    if (enableScheduling) {
+      setPrivacy({ value: "private", label: "Private" });
+    }
+  }, [enableScheduling]);
 
-    const snippet = {
-      title,
-      description,
-      tags,
-      categoryId: category.value,
-    };
+  const handlePublish = async () => {
+    if (!uploadGaurdsPassed({ errors, videoUrl, title, videoS3Key })) return;
 
-    const status = {
-      privacyStatus: privacy.value,
-    };
+    let thumbnailUrl = "";
+    const formData = new FormData();
+    if (!thumbnail && videoRef.current) {
+      const firstFrame = await getFirstFrameOfVideo(videoRef.current as any);
 
-    const body = {
-      accountId: activeAccount?.id,
-      publishAt: enableScheduling ? new Date(date).toISOString() : null,
-      thumbnail: thumbnail ? thumbnail : null,
-      notifySubscribers,
-      snippet,
-      status,
-    };
+      const file = new File([firstFrame as Blob], "thumbnail.jpeg", {
+        type: "image/jpeg",
+      });
+      formData.append("file", file);
+    } else {
+      formData.append("file", thumbnail as File);
+    }
 
     const response = await postRequest({
-      url: `${process.env.SERVER}/api/service/google/youtube/upload/video`,
-      body,
+      url: `${process.env.SERVER}/aws/s3/upload/yt-thumbnail?accountId=${activeAccount?.id}`,
+      body: formData,
       credentials: "include",
+      formData: true,
     });
 
     if (response.success) {
-      navigate("/");
+      thumbnailUrl = response.data.url as string;
+    } else {
+      console.log(response.data.error);
+    }
+
+    const publishAt = enableScheduling ? date : null;
+    const status = enableScheduling ? Status.SCHEDULED : Status.PUBLISHING;
+
+    const savedPost = await savePost({
+      videoUrl: videoUrl as string,
+      s3Key: videoS3Key,
+      categoryId: Number(category.value),
+      privacy: privacy.value.toString(),
+      accountId: activeAccount?.id,
+      title,
+      description,
+      tags,
+      notifySubscribers,
+      thumbnailUrl,
+      publishAt,
+      status,
+    });
+
+    if (savedPost.success) {
+      setLocalCache(null);
+      navigate(routes.posts);
+    } else {
+      console.log(savedPost.data.error);
     }
   };
 
@@ -250,6 +342,7 @@ const YoutubeUpload = () => {
             setIsError={(value) => setErrors({ ...errors, video: value })}
             activeAccount={activeAccount}
             cachedS3Key={videoS3Key}
+            videoRef={videoRef}
           />
         </Container>
 
@@ -317,7 +410,7 @@ const YoutubeUpload = () => {
             <Upload
               text="Upload thumbnail (optional)"
               accept={["image/png", "image/jpg", "image/jpeg"]}
-              maxSize={100 * 1024 * 1024}
+              maxSize={2 * 1024 * 1024}
               setIsError={(value) => setErrors({ ...errors, thumbnail: value })}
               setFile={setThumbnail}
             />
@@ -362,6 +455,7 @@ const YoutubeUpload = () => {
                 { label: "Private", value: "private" },
                 { label: "Unlisted", value: "unlisted" },
               ]}
+              disabled={enableScheduling}
               fill
             />
           </Container>
@@ -412,8 +506,8 @@ const YoutubeUpload = () => {
           noGrid
           flex
         >
-          <Button onClick={handleUpload} fill>
-            Publish
+          <Button onClick={handlePublish} fill>
+            {enableScheduling ? "Schedule" : "Publish"}
           </Button>
           <Button onClick={saveDraftPost} variant="tertiary" fill>
             Save as Draft

@@ -1,8 +1,9 @@
 import { useEffect } from "react";
+import type {OptionProps as Option} from "@allaround/all-components/select"
 
 import type { AccountType } from "../../utils";
 import { postRequest } from "../../utils";
-import { Category, Option } from "./types";
+import { Category } from "./types";
 
 type UseFetchVideoCategories = {
   activeAccount: AccountType | null;

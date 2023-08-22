@@ -197,6 +197,18 @@ const Bar = ({ contentRef }: Props) => {
                       </Button>
                     ))}
               </Dropdown>
+
+              {activeAccount?.id && (
+                <Button
+                  onClick={handleActivePage(routes.posts)}
+                  icon={<Icons.PostsIcon size="medium" />}
+                  transparent={activePage !== routes.posts}
+                  noBorder
+                  fill
+                >
+                  <Text size="medium">Posts</Text>
+                </Button>
+              )}
             </Sidebar>
           </Container>
         </>

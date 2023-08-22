@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Upload, Video, hooks } from "@allaround/all-components";
 
 import useUploadVideo from "./use-upload-video";
-import { AccountType, getSignedUrl } from "../../utils";
-import removeVideoFromS3 from "./remove-video-from-s3";
+import { AccountType, getSignedUrl, removeVideoFromS3 } from "../../utils";
 
 const VIDEO_MAX_DURATION_SECONDS = 60 * 60; // 1 hour
 const VIDEO_MAX_SIZE = 1024 * 1024 * 1024 * 20; // 20GB
@@ -17,6 +16,7 @@ type Props = {
   setIsError: (value: boolean) => void;
   activeAccount: AccountType | null;
   cachedS3Key?: string;
+  videoRef: React.RefObject<HTMLVideoElement>;
 };
 
 const VideoWrapper = ({
@@ -26,6 +26,7 @@ const VideoWrapper = ({
   setVideoS3Key,
   activeAccount,
   cachedS3Key,
+  videoRef,
 }: Props) => {
   const [video, setVideo] = useState<File | null>(null);
   const [currentProgress, setCurrentProgress] = useState(0);
@@ -94,6 +95,7 @@ const VideoWrapper = ({
           clickHandler={handleVideoRemove}
           currentProgress={currentProgress}
           onLoadedMetadata={() => setCanUpload(true)}
+          ref={videoRef}
         />
       ) : (
         <Upload
